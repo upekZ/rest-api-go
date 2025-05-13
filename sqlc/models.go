@@ -38,7 +38,7 @@ type NullUserStatus struct {
 // Scan implements the Scanner interface.
 func (ns *NullUserStatus) Scan(value interface{}) error {
 	if value == nil {
-		ns.UserStatus, ns.Valid = "", false
+		ns.UserStatus, ns.Valid = UserStatusInactive, true
 		return nil
 	}
 	ns.Valid = true

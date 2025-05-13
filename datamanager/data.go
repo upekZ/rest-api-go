@@ -44,8 +44,8 @@ func (manager *UserManager) SetUserParams() *sqlc.User {
 			Valid: (true),
 		},
 		Status: sqlc.NullUserStatus{
-			UserStatus: sqlc.UserStatus(manager.Status),
-			Valid:      manager.Status != "",
+			UserStatus: manager.Status,
+			Valid:      manager.Status.Valid(),
 		},
 	}
 

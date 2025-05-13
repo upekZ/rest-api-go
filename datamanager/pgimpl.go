@@ -43,10 +43,10 @@ func NewPostgresConn() (*PostgresConn, error) {
 	}, nil
 }
 
-func (pgConn *PostgresConn) CreateUser(user *UserManager) error {
+func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *UserManager) error {
 
 	params := user.SetUserParams()
-	err := pgConn.queries.CreateUser(context.Background(),
+	err := pgConn.queries.CreateUser(ctx,
 		sqlc.CreateUserParams{FirstName: params.FirstName, LastName: params.LastName,
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status})
 
@@ -57,9 +57,9 @@ func (pgConn *PostgresConn) CreateUser(user *UserManager) error {
 	return nil
 }
 
-func (pgConn *PostgresConn) GetUsers() ([]sqlc.User, error) {
+func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]sqlc.User, error) {
 
-	users, err := pgConn.queries.ListUsers(context.Background())
+	users, err := pgConn.queries.ListUsers(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("DB select error: %w", err)
@@ -68,7 +68,7 @@ func (pgConn *PostgresConn) GetUsers() ([]sqlc.User, error) {
 	return users, nil
 }
 
-func (pgConn *PostgresConn) UpdateUser(uID string, user *UserManager) error {
+func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *UserManager) error {
 
 	var uuidVal pgtype.UUID
 	err := uuidVal.Scan(uID)
@@ -78,7 +78,7 @@ func (pgConn *PostgresConn) UpdateUser(uID string, user *UserManager) error {
 
 	params := user.SetUserParams()
 
-	err = pgConn.queries.UpdateUser(context.Background(),
+	err = pgConn.queries.UpdateUser(ctx,
 		sqlc.UpdateUserParams{FirstName: params.FirstName, LastName: params.LastName,
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status, Userid: uuidVal})
 
@@ -89,12 +89,17 @@ func (pgConn *PostgresConn) UpdateUser(uID string, user *UserManager) error {
 	return err
 }
 
-func (pgConn *PostgresConn) DeleteUser(id string) error {
+func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 
 	var uuidVal pgtype.UUID
 	err := uuidVal.Scan(id)
 	if err != nil {
 		return fmt.Errorf("user id parsing failure: %w", err)
+	}
+
+	_, err = pgConn.queries.GetUser(ctx, uuidVal)
+	if err != nil {
+		return fmt.Errorf("fetching failure for user: [%s] error: %w", id, err)
 	}
 
 	err = pgConn.queries.DeleteUser(context.Background(), uuidVal)
@@ -104,7 +109,7 @@ func (pgConn *PostgresConn) DeleteUser(id string) error {
 	return err
 }
 
-func (pgConn *PostgresConn) GetUserByID(id string) (*UserManager, error) {
+func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*UserManager, error) {
 
 	var uuidVal pgtype.UUID
 	err := uuidVal.Scan(id)
@@ -112,7 +117,7 @@ func (pgConn *PostgresConn) GetUserByID(id string) (*UserManager, error) {
 		return nil, fmt.Errorf("user id parsing failure: %w", err)
 	}
 
-	user, err := pgConn.queries.GetUser(context.Background(), uuidVal)
+	user, err := pgConn.queries.GetUser(ctx, uuidVal)
 	if err != nil {
 		return nil, fmt.Errorf("query execusion failure for account [%s] error: %w", id, err)
 	}

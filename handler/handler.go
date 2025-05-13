@@ -37,7 +37,7 @@ func (o *Handler) Create(writer http.ResponseWriter, req *http.Request) {
 	}
 
 	if datamanager.ValidateUser(&user) {
-		err := o.dbConnector.CreateUser(&user)
+		err := o.dbConnector.CreateUser(req.Context(), &user)
 
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -53,7 +53,7 @@ func (o *Handler) Create(writer http.ResponseWriter, req *http.Request) {
 
 func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
 
-	users, err := o.dbConnector.GetUsers()
+	users, err := o.dbConnector.GetUsers(req.Context())
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -65,10 +65,10 @@ func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
 func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
-	user, err := o.dbConnector.GetUserByID(userID)
+	user, err := o.dbConnector.GetUserByID(req.Context(), userID)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -85,7 +85,7 @@ func (o *Handler) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := o.dbConnector.UpdateUser(userID, &user)
+	err := o.dbConnector.UpdateUser(req.Context(), userID, &user)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func (o *Handler) DeleteByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
 
-	err := o.dbConnector.DeleteUser(userID)
+	err := o.dbConnector.DeleteUser(req.Context(), userID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
