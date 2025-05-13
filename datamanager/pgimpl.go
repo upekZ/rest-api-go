@@ -38,38 +38,6 @@ func NewPostgresConn() (*PostgresConn, error) {
 
 	queries := sqlc.New(pool)
 
-	// createExtension := `
-	// CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-	// `
-
-	// createType := `
-	// DO $$
-	// BEGIN
-	//     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_status') THEN
-	//         CREATE TYPE user_status AS ENUM ('Active', 'Inactive');
-	//     END IF;
-	// END$$;
-	// `
-
-	// createTable := `
-	// CREATE TABLE IF NOT EXISTS "user" (
-	// 	userId uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-	// 	first_name varchar(100) NOT NULL,
-	// 	last_name varchar(100) NOT NULL,
-	// 	email varchar(100) NOT NULL,
-	// 	phone varchar(100),
-	// 	age integer,
-	// 	"status" user_status DEFAULT 'Active'
-	// );
-	// `
-
-	// for _, query := range []string{createExtension, createType, createTable} {
-	// 	_, err := pool.Exec(context.Background(), query)
-	// 	if err != nil {
-	// 		fmt.Println("Query execusion failure")
-	// 	}
-	// }
-
 	return &PostgresConn{
 		queries: queries,
 	}, nil
