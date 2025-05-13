@@ -13,6 +13,7 @@ import (
 )
 
 type PostgresConn struct {
+	pool    *pgxpool.Pool
 	queries *sqlc.Queries
 }
 
@@ -39,14 +40,21 @@ func NewPostgresConn() (*PostgresConn, error) {
 	queries := sqlc.New(pool)
 
 	return &PostgresConn{
+		pool:    pool,
 		queries: queries,
 	}, nil
 }
 
 func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *UserManager) error {
 
+	tx, err := pgConn.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	params := user.SetUserParams()
-	err := pgConn.queries.CreateUser(ctx,
+	err = pgConn.queries.CreateUser(ctx,
 		sqlc.CreateUserParams{FirstName: params.FirstName, LastName: params.LastName,
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status})
 
@@ -59,6 +67,12 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *UserManager) e
 
 func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]sqlc.User, error) {
 
+	tx, err := pgConn.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	users, err := pgConn.queries.ListUsers(ctx)
 
 	if err != nil {
@@ -70,8 +84,14 @@ func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]sqlc.User, error) {
 
 func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *UserManager) error {
 
+	tx, err := pgConn.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var uuidVal pgtype.UUID
-	err := uuidVal.Scan(uID)
+	err = uuidVal.Scan(uID)
 	if err != nil {
 		return fmt.Errorf("user id parsing failure: %w", err)
 	}
@@ -91,8 +111,14 @@ func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *Us
 
 func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 
+	tx, err := pgConn.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var uuidVal pgtype.UUID
-	err := uuidVal.Scan(id)
+	err = uuidVal.Scan(id)
 	if err != nil {
 		return fmt.Errorf("user id parsing failure: %w", err)
 	}
@@ -111,8 +137,14 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 
 func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*UserManager, error) {
 
+	tx, err := pgConn.pool.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
 	var uuidVal pgtype.UUID
-	err := uuidVal.Scan(id)
+	err = uuidVal.Scan(id)
 	if err != nil {
 		return nil, fmt.Errorf("user id parsing failure: %w", err)
 	}
