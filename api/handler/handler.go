@@ -1,41 +1,44 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/upekZ/rest-api-go/database"
+	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"github.com/upekZ/rest-api-go/internal/types"
 	"net/http"
 )
 
-type Handler struct {
-	dbConnector *database.PostgresConn
+type DB interface {
+	GetUserByID(context.Context, string) (*types.UserManager, error)
+	DeleteUser(context.Context, string) error
+	UpdateUser(context.Context, string, *types.UserManager) error
+	GetUsers(context.Context) ([]sqlc.User, error)
+	CreateUser(context.Context, *types.UserManager) error
 }
 
-func NewHandler() (*Handler, error) {
+type Handler struct {
+	db DB
+}
 
-	pgConnector, err := database.NewPostgresConn()
-
-	if err != nil {
-		return nil, err
-	}
-
+func NewHandler(dbMnger DB) *Handler {
 	return &Handler{
-		dbConnector: pgConnector,
-	}, err
+		db: dbMnger,
+	}
 }
 
 func (o *Handler) Create(writer http.ResponseWriter, req *http.Request) {
 
-	var user database.UserManager
+	var user types.UserManager
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if database.ValidateUser(&user) {
-		err := o.dbConnector.CreateUser(req.Context(), &user)
+	if types.ValidateUser(&user) {
+		err := o.db.CreateUser(req.Context(), &user)
 
 		if err != nil {
 			http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -51,7 +54,7 @@ func (o *Handler) Create(writer http.ResponseWriter, req *http.Request) {
 
 func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
 
-	users, err := o.dbConnector.GetUsers(req.Context())
+	users, err := o.db.GetUsers(req.Context())
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -65,7 +68,7 @@ func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
 func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
-	user, err := o.dbConnector.GetUserByID(req.Context(), userID)
+	user, err := o.db.GetUserByID(req.Context(), userID)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusNotFound)
@@ -80,14 +83,14 @@ func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
 func (o *Handler) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
-	var user database.UserManager
+	var user types.UserManager
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err := o.dbConnector.UpdateUser(req.Context(), userID, &user)
+	err := o.db.UpdateUser(req.Context(), userID, &user)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -101,7 +104,7 @@ func (o *Handler) DeleteByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
 
-	err := o.dbConnector.DeleteUser(req.Context(), userID)
+	err := o.db.DeleteUser(req.Context(), userID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

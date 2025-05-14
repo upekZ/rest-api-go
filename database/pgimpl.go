@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"github.com/upekZ/rest-api-go/internal/types"
 	"os"
 	"runtime"
 	"time"
@@ -36,30 +37,30 @@ func NewPostgresConn() (*PostgresConn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.NewWithConfig(ctx, poolconfig)
+	glpool, err := pgxpool.NewWithConfig(ctx, poolconfig)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := pool.Ping(ctx); err != nil {
+	if err := glpool.Ping(ctx); err != nil {
 		return nil, err
 	}
 
-	queries := sqlc.New(pool)
+	glqueries := sqlc.New(glpool)
 
 	return &PostgresConn{
-		pool:    pool,
-		queries: queries,
+		pool:    glpool,
+		queries: glqueries,
 	}, nil
 }
 
-func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *UserManager) error {
+func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserManager) error {
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer HandleRollBack(ctx, tx)
+	defer handleRollBack(ctx, tx)
 
 	params := user.SetUserParams()
 	err = pgConn.queries.WithTx(tx).CreateUser(ctx,
@@ -88,13 +89,13 @@ func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]sqlc.User, error) {
 	return users, nil
 }
 
-func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *UserManager) error {
+func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *types.UserManager) error {
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer HandleRollBack(ctx, tx)
+	defer handleRollBack(ctx, tx)
 
 	var uuidVal pgtype.UUID
 	err = uuidVal.Scan(uID)
@@ -125,7 +126,7 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer HandleRollBack(ctx, tx)
+	defer handleRollBack(ctx, tx)
 
 	var uuidVal pgtype.UUID
 	err = uuidVal.Scan(id)
@@ -150,7 +151,7 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 	return err
 }
 
-func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*UserManager, error) {
+func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.UserManager, error) {
 
 	var uuidVal pgtype.UUID
 	if err := uuidVal.Scan(id); err != nil {
@@ -161,11 +162,11 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*UserMa
 	if err != nil {
 		return nil, fmt.Errorf("query execution failure for account [%s] error: %w", id, err)
 	}
-	userManager := CreateUserMgrFromParams(&user)
+	userManager := types.CreateUserMgrFromParams(&user)
 	return userManager, nil
 }
 
-func HandleRollBack(ctx context.Context, trx pgx.Tx) {
+func handleRollBack(ctx context.Context, trx pgx.Tx) {
 	if err := trx.Rollback(ctx); err != nil {
 		fmt.Printf("transaction roll-back failure: %v", err)
 	}

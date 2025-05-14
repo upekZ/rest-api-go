@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/upekZ/rest-api-go/api/handler"
+	"github.com/upekZ/rest-api-go/database"
 	"net/http"
 )
 
@@ -24,7 +25,11 @@ func loadRoutes() *chi.Mux {
 }
 
 func loadUserRoutes(router chi.Router) {
-	userHandler, err := handler.NewHandler()
+	storage, err := database.NewPostgresConn()
+	if err != nil {
+		fmt.Printf("Failure to load db connector: %s\n", err.Error())
+	}
+	userHandler := handler.NewHandler(storage)
 
 	if err != nil {
 		fmt.Printf("Failure to load user handler: %s\n", err.Error())
