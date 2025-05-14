@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -167,7 +168,7 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.
 }
 
 func handleRollBack(ctx context.Context, trx pgx.Tx) {
-	if err := trx.Rollback(ctx); err != nil {
+	if err := trx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
 		fmt.Printf("transaction roll-back failure: %v", err)
 	}
 }

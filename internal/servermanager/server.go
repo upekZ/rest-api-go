@@ -8,13 +8,23 @@ import (
 
 type App struct {
 	router http.Handler
+	handle reqHandle
 }
 
-func New() *App {
-	app := &App{
-		router: loadRoutes(),
-	}
+type reqHandle interface {
+	Create(writer http.ResponseWriter, req *http.Request)
+	List(writer http.ResponseWriter, req *http.Request)
+	GetByID(writer http.ResponseWriter, req *http.Request)
+	UpdateByID(writer http.ResponseWriter, req *http.Request)
+	DeleteByID(writer http.ResponseWriter, req *http.Request)
+}
 
+func NewServer(handle reqHandle) *App {
+
+	app := &App{
+		handle: handle,
+	}
+	app.loadRoutes()
 	return app
 }
 
