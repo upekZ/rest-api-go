@@ -59,7 +59,9 @@ func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 
-	WriteJSON(writer, http.StatusAccepted, users)
+	if err := WriteJSON(writer, http.StatusAccepted, users); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
@@ -72,7 +74,9 @@ func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	WriteJSON(writer, http.StatusCreated, user)
+	if err := WriteJSON(writer, http.StatusCreated, user); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (o *Handler) UpdateByID(writer http.ResponseWriter, req *http.Request) {
