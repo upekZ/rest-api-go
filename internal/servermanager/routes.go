@@ -31,10 +31,6 @@ func loadUserRoutes(router chi.Router) {
 	}
 	userHandler := handler.NewHandler(storage)
 
-	if err != nil {
-		fmt.Printf("Failure to load user handler: %s\n", err.Error())
-	}
-
 	router.Post("/", userHandler.Create)
 	router.Get("/", userHandler.List)
 	router.Get("/{id}", userHandler.GetByID)

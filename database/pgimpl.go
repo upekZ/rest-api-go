@@ -37,20 +37,20 @@ func NewPostgresConn() (*PostgresConn, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	glpool, err := pgxpool.NewWithConfig(ctx, poolconfig)
+	pool, err := pgxpool.NewWithConfig(ctx, poolconfig)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := glpool.Ping(ctx); err != nil {
+	if err := pool.Ping(ctx); err != nil {
 		return nil, err
 	}
 
-	glqueries := sqlc.New(glpool)
+	queries := sqlc.New(pool)
 
 	return &PostgresConn{
-		pool:    glpool,
-		queries: glqueries,
+		pool:    pool,
+		queries: queries,
 	}, nil
 }
 

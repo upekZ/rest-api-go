@@ -1,9 +1,9 @@
 package servermanager
 
 import (
-	"context"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type App struct {
@@ -18,11 +18,13 @@ func New() *App {
 	return app
 }
 
-func (app *App) Start(ctx context.Context) error {
+func (app *App) Start() error {
 
 	server := &http.Server{
-		Addr:    ":3000",
-		Handler: app.router,
+		Addr:         ":3000",
+		Handler:      app.router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 
 	err := server.ListenAndServe()
