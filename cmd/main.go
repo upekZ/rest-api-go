@@ -3,8 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-
-	"github.com/upekZ/rest-api-go/servermanager"
+	"github.com/upekZ/rest-api-go/internal/servermanager"
 )
 
 func main() {

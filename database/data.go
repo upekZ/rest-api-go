@@ -1,10 +1,9 @@
-package datamanager
+package database
 
 import (
-	"regexp"
-
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/upekZ/rest-api-go/sqlc"
+	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"regexp"
 )
 
 type UserManager struct {
@@ -41,7 +40,7 @@ func (manager *UserManager) SetUserParams() *sqlc.User {
 		},
 		Age: pgtype.Int4{
 			Int32: int32(manager.Age),
-			Valid: (true),
+			Valid: true,
 		},
 		Status: sqlc.NullUserStatus{
 			UserStatus: manager.Status,

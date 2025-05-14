@@ -23,8 +23,8 @@ type CreateUserParams struct {
 	LastName  string
 	Email     string
 	Phone     pgtype.Text
-	Age       pgtype.Int4
-	Status    NullUserStatus
+	Age    pgtype.Int4
+	Status NullUserStatus
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
@@ -113,9 +113,9 @@ type UpdateUserParams struct {
 	LastName  string
 	Email     string
 	Phone     pgtype.Text
-	Age       pgtype.Int4
-	Status    NullUserStatus
-	Userid    pgtype.UUID
+	Age    pgtype.Int4
+	Status NullUserStatus
+	Userid pgtype.UUID
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {

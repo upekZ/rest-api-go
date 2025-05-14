@@ -1,17 +1,15 @@
-package datamanager
+package database
 
 import (
 	"context"
 	"fmt"
-	"os"
-	"runtime"
-	"time"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/upekZ/rest-api-go/sqlc"
+	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"os"
+	"runtime"
+	"time"
 )
 
 type PostgresConn struct {

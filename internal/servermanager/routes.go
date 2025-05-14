@@ -2,11 +2,10 @@ package servermanager
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/upekZ/rest-api-go/handler"
+	"github.com/upekZ/rest-api-go/api/handler"
+	"net/http"
 )
 
 func loadRoutes() *chi.Mux {
@@ -28,7 +27,7 @@ func loadUserRoutes(router chi.Router) {
 	userHandler, err := handler.NewHandler()
 
 	if err != nil {
-		fmt.Println("Failure to load user handler: %w", err)
+		fmt.Printf("Failure to load user handler: %s\n", err.Error())
 	}
 
 	router.Post("/", userHandler.Create)

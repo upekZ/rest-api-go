@@ -2,8 +2,8 @@ version: "2"
 cloud:
   project: "REST-IMPL"
 sql:
-- schema: "sqlc/schema.sql"
-  queries: "sqlc/query.sql"
+- schema: "schema.sql"
+  queries: "query.sql"
   engine: "postgresql"
   gen:
     go: 
