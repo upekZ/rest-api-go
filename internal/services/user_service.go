@@ -55,6 +55,7 @@ func (o *UserService) CreateUser(ctx context.Context, user types.UserEntity) err
 
 	o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
 	o.cache.SetValue(uniqueFields["Email"], user.Email, true)
+
 	return nil
 }
 

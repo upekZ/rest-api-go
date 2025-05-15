@@ -15,6 +15,7 @@ func (app *Server) loadChiRoutes() *chi.Mux {
 		writer.WriteHeader(http.StatusOK)
 	})
 
+	router.Get("/ws", app.channel.ServeWS())
 	router.Route("/users", app.loadUserRoutes)
 
 	return router
@@ -27,5 +28,4 @@ func (app *Server) loadUserRoutes(router chi.Router) {
 	router.Get("/{id}", app.GetByID)
 	router.Patch("/{id}", app.UpdateByID)
 	router.Delete("/{id}", app.DeleteByID)
-
 }

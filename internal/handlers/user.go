@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/upekZ/rest-api-go/internal/database/queries"
 	"github.com/upekZ/rest-api-go/internal/types"
+	"log"
 	"net/http"
 )
 
@@ -16,6 +17,10 @@ type Service interface {
 	GetUserByID(ctx context.Context, id string) (*types.UserEntity, error)
 	DeleteUser(ctx context.Context, id string) error
 	UpdateUser(ctx context.Context, id string, user *types.UserEntity) error
+}
+
+type Channel interface {
+	ServeWS() http.HandlerFunc
 }
 
 func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
@@ -30,6 +35,9 @@ func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 	if err := app.service.CreateUser(req.Context(), user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
+	}
+	if err := json.NewEncoder(writer).Encode(map[string]string{"message": "User created"}); err != nil {
+		log.Printf("Failed to write JSON response in user creation: %v", err)
 	}
 	writer.WriteHeader(http.StatusCreated)
 

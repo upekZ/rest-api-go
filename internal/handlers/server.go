@@ -8,11 +8,13 @@ import (
 
 type Server struct {
 	service Service
+	channel Channel
 }
 
-func NewServer(service Service) *Server {
+func NewServer(service Service, channel Channel) *Server {
 	return &Server{
 		service: service,
+		channel: channel,
 	}
 }
 
