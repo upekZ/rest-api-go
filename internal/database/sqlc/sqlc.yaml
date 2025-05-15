@@ -2,12 +2,12 @@ version: "2"
 cloud:
   project: "REST-IMPL"
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
+- schema: "../../../sql/schema.sql"
+  queries: "../../../sql/query.sql"
   engine: "postgresql"
   gen:
     go: 
-      package: "sqlc"
-      out: "sqlc"
+      package: "queries"
+      out: "../../database/queries"
       sql_package: "pgx/v5"
       emit_enum_valid_method: true

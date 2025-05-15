@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.29.0
 
-package models
+package queries
 
 import (
 	"database/sql/driver"
@@ -38,7 +38,7 @@ type NullUserStatus struct {
 // Scan implements the Scanner interface.
 func (ns *NullUserStatus) Scan(value interface{}) error {
 	if value == nil {
-		ns.UserStatus, ns.Valid = UserStatusInactive, true
+		ns.UserStatus, ns.Valid = "", false
 		return nil
 	}
 	ns.Valid = true
@@ -68,6 +68,6 @@ type User struct {
 	LastName  string
 	Email     string
 	Phone     pgtype.Text
-	Age    pgtype.Int4
-	Status NullUserStatus
+	Age       pgtype.Int4
+	Status    NullUserStatus
 }

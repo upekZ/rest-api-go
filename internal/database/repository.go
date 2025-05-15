@@ -7,9 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/upekZ/rest-api-go/internal/database/models"
 	"github.com/upekZ/rest-api-go/internal/database/queries"
-	"github.com/upekZ/rest-api-go/internal/database/sqlc"
 	"github.com/upekZ/rest-api-go/internal/types"
 	"os"
 	"runtime"
@@ -17,8 +15,8 @@ import (
 )
 
 type PostgresConn struct {
-	pool    *pgxpool.Pool
-	queries *sqlc.Queries
+	pool         *pgxpool.Pool
+	queryHandler *queries.Queries
 }
 
 func NewPostgresConn() (*PostgresConn, error) {
@@ -49,11 +47,11 @@ func NewPostgresConn() (*PostgresConn, error) {
 		return nil, err
 	}
 
-	queries := sqlc.New(pool)
+	queryHandler := queries.New(pool)
 
 	return &PostgresConn{
-		pool:    pool,
-		queries: queries,
+		pool:         pool,
+		queryHandler: queryHandler,
 	}, nil
 }
 
@@ -66,9 +64,8 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserMana
 	defer handleRollBack(ctx, tx)
 
 	params := user.SetUserParams()
-	err = pgConn.queries.WithTx(tx).CreateUser(ctx,
-		queries.CreateUserParams{FirstName: params.FirstName, LastName: params.LastName,
-			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status})
+	err = pgConn.queryHandler.WithTx(tx).CreateUser(ctx, queries.CreateUserParams{FirstName: params.FirstName, LastName: params.LastName,
+		Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status})
 
 	if err != nil {
 		return fmt.Errorf("error in user creation: %w", err)
@@ -81,9 +78,9 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserMana
 	return nil
 }
 
-func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]models.User, error) {
+func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error) {
 
-	users, err := pgConn.queries.ListUsers(ctx)
+	users, err := pgConn.queryHandler.ListUsers(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("DB select error: %w", err)
@@ -108,7 +105,7 @@ func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *ty
 
 	params := user.SetUserParams()
 
-	err = pgConn.queries.WithTx(tx).UpdateUser(ctx,
+	err = pgConn.queryHandler.WithTx(tx).UpdateUser(ctx,
 		queries.UpdateUserParams{FirstName: params.FirstName, LastName: params.LastName,
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status, Userid: uuidVal})
 
@@ -137,12 +134,12 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 		return fmt.Errorf("user id parsing failure: %w", err)
 	}
 
-	_, err = pgConn.queries.GetUser(ctx, uuidVal)
+	_, err = pgConn.queryHandler.GetUser(ctx, uuidVal)
 	if err != nil {
 		return fmt.Errorf("user: [%s] not found. error: %w", id, err)
 	}
 
-	err = pgConn.queries.WithTx(tx).DeleteUser(context.Background(), uuidVal)
+	err = pgConn.queryHandler.WithTx(tx).DeleteUser(context.Background(), uuidVal)
 	if err != nil {
 		return fmt.Errorf("user deletion failure: %w", err)
 	}
@@ -161,7 +158,7 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.
 		return nil, fmt.Errorf("user id parsing failure: %w", err)
 	}
 
-	user, err := pgConn.queries.GetUser(ctx, uuidVal)
+	user, err := pgConn.queryHandler.GetUser(ctx, uuidVal)
 	if err != nil {
 		return nil, fmt.Errorf("query execution failure for account [%s] error: %w", id, err)
 	}
