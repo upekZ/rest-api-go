@@ -18,8 +18,8 @@ type DB interface {
 	UpdateUser(context.Context, string, *types.UserEntity) error
 	GetUsers(context.Context) ([]queries.User, error)
 	CreateUser(context.Context, *types.UserEntity) error
-	IsEmailTaken(context.Context, string) (bool, error)
-	IsPhoneTaken(context.Context, string) (bool, error)
+	IsEmailUnique(context.Context, string) (bool, error)
+	IsPhoneUnique(context.Context, string) (bool, error)
 }
 
 type UserService struct {
@@ -27,8 +27,11 @@ type UserService struct {
 	cache Cache
 }
 
-func NewUserService(db DB) *UserService {
-	return &UserService{db: db}
+func NewUserService(db DB, cache Cache) *UserService {
+	return &UserService{
+		db:    db,
+		cache: cache,
+	}
 }
 
 func (o *UserService) CreateUser(ctx context.Context, user types.UserEntity) error {
@@ -37,16 +40,21 @@ func (o *UserService) CreateUser(ctx context.Context, user types.UserEntity) err
 		return fmt.Errorf("user validation failure: %v", err)
 	}
 
-	for key, _ := range uniqueFields {
-		if isUnique, err := o.IsUniqueField(ctx, uniqueFields[key], user.Email); !isUnique || err != nil {
-			return fmt.Errorf("user validation failure: %v", err)
-		}
+	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Phone"], user.Phone); !isUnique {
+		o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
+		return fmt.Errorf("user validation failure: %v", err)
 	}
 
+	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Email"], user.Email); !isUnique {
+		o.cache.SetValue(uniqueFields["Email"], user.Email, true)
+		return fmt.Errorf("user validation failure: %v", err)
+	}
 	if err := o.db.CreateUser(ctx, &user); err != nil {
 		return fmt.Errorf("user creation failure in db: %v", err)
 	}
 
+	o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
+	o.cache.SetValue(uniqueFields["Email"], user.Email, true)
 	return nil
 }
 
@@ -77,6 +85,9 @@ func (o *UserService) DeleteUser(ctx context.Context, userID string) error {
 	if err := o.db.DeleteUser(ctx, userID); err != nil {
 		return fmt.Errorf("user deletion failure in db: %w", err)
 	}
+
+	o.cache.DeleteField(uniqueFields["Phone"], user.Phone)
+	o.cache.DeleteField(uniqueFields["Email"], user.Email)
 	return nil
 }
 func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager *types.UserEntity) error {

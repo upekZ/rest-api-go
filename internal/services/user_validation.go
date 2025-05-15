@@ -19,16 +19,16 @@ func (o *UserService) IsUniqueField(ctx context.Context, key string, value strin
 	case true:
 		switch taken {
 		case true:
-			return false, fmt.Errorf("%s: %s already taken", key, value)
+			return false, fmt.Errorf("duplicate %s: %s", key, value)
 		case false:
 			return true, nil
 		}
 	case false:
 		switch key {
 		case uniqueFields["Phone"]:
-			return o.db.IsPhoneTaken(ctx, value)
+			return o.db.IsPhoneUnique(ctx, value)
 		case uniqueFields["Email"]:
-			return o.db.IsEmailTaken(ctx, value)
+			return o.db.IsEmailUnique(ctx, value)
 		default:
 			return false, fmt.Errorf("%s: invalid key", key)
 		}

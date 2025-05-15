@@ -11,7 +11,7 @@ type Cache struct {
 	cache *gocache.Cache
 }
 
-func New() *Cache {
+func NewCache() *Cache {
 	return &Cache{
 		cache: gocache.New(24*time.Hour, 1*time.Hour),
 	}

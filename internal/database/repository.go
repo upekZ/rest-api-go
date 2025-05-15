@@ -44,9 +44,12 @@ func NewPostgresConn() (*PostgresConn, error) {
 		return nil, err
 	}
 
+	println("Connected to database")
+
 	if err := pool.Ping(ctx); err != nil {
 		return nil, err
 	}
+	println("Pinged to database")
 
 	queryHandler := queries.New(pool)
 
@@ -167,15 +170,15 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.
 	return userManager, nil
 }
 
-func (pgConn *PostgresConn) IsEmailTaken(ctx context.Context, email string) (bool, error) {
-	return IsValueTaken(ctx, email, pgConn.queryHandler.CheckEmail)
+func (pgConn *PostgresConn) IsEmailUnique(ctx context.Context, email string) (bool, error) {
+	return IsValueUnique(ctx, email, pgConn.queryHandler.CheckEmail)
 }
 
-func (pgConn *PostgresConn) IsPhoneTaken(ctx context.Context, phone string) (bool, error) {
-	return IsValueTaken(ctx, phone, pgConn.queryHandler.CheckPhone)
+func (pgConn *PostgresConn) IsPhoneUnique(ctx context.Context, phone string) (bool, error) {
+	return IsValueUnique(ctx, phone, pgConn.queryHandler.CheckPhone)
 }
 
-func IsValueTaken(ctx context.Context, value string, f func(context.Context, string) (int32, error)) (bool, error) {
+func IsValueUnique(ctx context.Context, value string, f func(context.Context, string) (int32, error)) (bool, error) {
 
 	found, err := f(ctx, value)
 
@@ -183,12 +186,12 @@ func IsValueTaken(ctx context.Context, value string, f func(context.Context, str
 	case 0:
 		{
 			if errors.Is(err, sql.ErrNoRows) {
-				return false, nil
+				return true, nil
 			}
 			return false, err
 		}
 	case 1:
-		return true, err
+		return false, fmt.Errorf("duplicate value [%s]", value)
 	}
 	return false, err
 }
