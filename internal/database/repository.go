@@ -7,7 +7,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"github.com/upekZ/rest-api-go/internal/database/models"
+	"github.com/upekZ/rest-api-go/internal/database/queries"
+	"github.com/upekZ/rest-api-go/internal/database/sqlc"
 	"github.com/upekZ/rest-api-go/internal/types"
 	"os"
 	"runtime"
@@ -65,7 +67,7 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserMana
 
 	params := user.SetUserParams()
 	err = pgConn.queries.WithTx(tx).CreateUser(ctx,
-		sqlc.CreateUserParams{FirstName: params.FirstName, LastName: params.LastName,
+		queries.CreateUserParams{FirstName: params.FirstName, LastName: params.LastName,
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status})
 
 	if err != nil {
@@ -79,7 +81,7 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserMana
 	return nil
 }
 
-func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]sqlc.User, error) {
+func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]models.User, error) {
 
 	users, err := pgConn.queries.ListUsers(ctx)
 
@@ -107,7 +109,7 @@ func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *ty
 	params := user.SetUserParams()
 
 	err = pgConn.queries.WithTx(tx).UpdateUser(ctx,
-		sqlc.UpdateUserParams{FirstName: params.FirstName, LastName: params.LastName,
+		queries.UpdateUserParams{FirstName: params.FirstName, LastName: params.LastName,
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status, Userid: uuidVal})
 
 	if err != nil {

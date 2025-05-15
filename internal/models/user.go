@@ -1,11 +1,11 @@
-package handler
+package models
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"github.com/upekZ/rest-api-go/internal/database/models"
 	"github.com/upekZ/rest-api-go/internal/types"
 	"net/http"
 )
@@ -14,7 +14,7 @@ type DB interface {
 	GetUserByID(context.Context, string) (*types.UserManager, error)
 	DeleteUser(context.Context, string) error
 	UpdateUser(context.Context, string, *types.UserManager) error
-	GetUsers(context.Context) ([]sqlc.User, error)
+	GetUsers(context.Context) ([]models.User, error)
 	CreateUser(context.Context, *types.UserManager) error
 }
 

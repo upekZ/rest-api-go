@@ -3,10 +3,12 @@
 //   sqlc v1.29.0
 // source: query.sql
 
-package sqlc
+package queries
 
 import (
 	"context"
+	"github.com/upekZ/rest-api-go/internal/database/models"
+	"github.com/upekZ/rest-api-go/internal/database/sqlc"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -24,10 +26,10 @@ type CreateUserParams struct {
 	Email     string
 	Phone     pgtype.Text
 	Age    pgtype.Int4
-	Status NullUserStatus
+	Status models.NullUserStatus
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+func (q *sqlc.Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	_, err := q.db.Exec(ctx, createUser,
 		arg.FirstName,
 		arg.LastName,
@@ -44,7 +46,7 @@ DELETE FROM "user"
 WHERE userId = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, userid pgtype.UUID) error {
+func (q *sqlc.Queries) DeleteUser(ctx context.Context, userid pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUser, userid)
 	return err
 }
@@ -54,9 +56,9 @@ SELECT userid, first_name, last_name, email, phone, age, status FROM "user"
 WHERE userId = $1 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, userid pgtype.UUID) (User, error) {
+func (q *sqlc.Queries) GetUser(ctx context.Context, userid pgtype.UUID) (models.User, error) {
 	row := q.db.QueryRow(ctx, getUser, userid)
-	var i User
+	var i models.User
 	err := row.Scan(
 		&i.Userid,
 		&i.FirstName,
@@ -74,15 +76,15 @@ SELECT userId, first_name, last_name, email, phone, age, "status" FROM "user"
 ORDER BY first_name
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+func (q *sqlc.Queries) ListUsers(ctx context.Context) ([]models.User, error) {
 	rows, err := q.db.Query(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []User
+	var items []models.User
 	for rows.Next() {
-		var i User
+		var i models.User
 		if err := rows.Scan(
 			&i.Userid,
 			&i.FirstName,
@@ -114,11 +116,11 @@ type UpdateUserParams struct {
 	Email     string
 	Phone     pgtype.Text
 	Age    pgtype.Int4
-	Status NullUserStatus
+	Status models.NullUserStatus
 	Userid pgtype.UUID
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+func (q *sqlc.Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser,
 		arg.FirstName,
 		arg.LastName,

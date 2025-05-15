@@ -1,4 +1,4 @@
-package servermanager
+package handlers
 
 import (
 	"fmt"
@@ -39,8 +39,8 @@ func (app *App) Start() error {
 
 	err := server.ListenAndServe()
 	if err != nil {
-		return fmt.Errorf("server start failed %w", err)
+		return fmt.Errorf("server start failure: %w", err)
 	}
 
-	return nil
+	return err
 }

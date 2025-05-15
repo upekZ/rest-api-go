@@ -2,18 +2,18 @@ package types
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/upekZ/rest-api-go/internal/sqlc"
+	"github.com/upekZ/rest-api-go/internal/database/models"
 	"regexp"
 )
 
 type UserManager struct {
-	UID       string          `json:"userId"`
-	FirstName string          `json:"firstName"`
-	LastName  string          `json:"lastName"`
-	Email     string          `json:"email"`
-	Phone     string          `json:"phone"`
-	Age       uint32          `json:"age"`
-	Status    sqlc.UserStatus `json:"status"`
+	UID       string            `json:"userId"`
+	FirstName string            `json:"firstName"`
+	LastName  string            `json:"lastName"`
+	Email     string            `json:"email"`
+	Phone     string            `json:"phone"`
+	Age       uint32            `json:"age"`
+	Status    models.UserStatus `json:"status"`
 }
 
 func ValidateUser(user *UserManager) bool {
@@ -29,8 +29,8 @@ func ValidateUser(user *UserManager) bool {
 	return validReqFields
 }
 
-func (manager *UserManager) SetUserParams() *sqlc.User {
-	user := sqlc.User{
+func (manager *UserManager) SetUserParams() *models.User {
+	user := models.User{
 		FirstName: manager.FirstName,
 		LastName:  manager.LastName,
 		Email:     manager.Email,
@@ -42,7 +42,7 @@ func (manager *UserManager) SetUserParams() *sqlc.User {
 			Int32: int32(manager.Age),
 			Valid: true,
 		},
-		Status: sqlc.NullUserStatus{
+		Status: models.NullUserStatus{
 			UserStatus: manager.Status,
 			Valid:      manager.Status.Valid(),
 		},
@@ -51,7 +51,7 @@ func (manager *UserManager) SetUserParams() *sqlc.User {
 	return &user
 }
 
-func CreateUserMgrFromParams(params *sqlc.User) *UserManager {
+func CreateUserMgrFromParams(params *models.User) *UserManager {
 	return &UserManager{
 		UID:       params.Userid.String(),
 		FirstName: params.FirstName,
