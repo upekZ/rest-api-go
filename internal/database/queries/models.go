@@ -67,7 +67,7 @@ type User struct {
 	FirstName string
 	LastName  string
 	Email     string
-	Phone     pgtype.Text
+	Phone     string
 	Age       pgtype.Int4
 	Status    NullUserStatus
 }

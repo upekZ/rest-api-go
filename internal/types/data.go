@@ -1,12 +1,13 @@
 package types
 
 import (
+	"fmt"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/upekZ/rest-api-go/internal/database/queries"
 	"regexp"
 )
 
-type UserManager struct {
+type UserEntity struct {
 	UID       string             `json:"userId"`
 	FirstName string             `json:"firstName"`
 	LastName  string             `json:"lastName"`
@@ -16,7 +17,7 @@ type UserManager struct {
 	Status    queries.UserStatus `json:"status"`
 }
 
-func ValidateUser(user *UserManager) bool {
+func ValidateUser(user *UserEntity) (bool, error) {
 
 	var validReqFields = (IsValidEmail(user.Email)) && IsValidName(user.FirstName) && IsValidName(user.LastName)
 
@@ -26,18 +27,19 @@ func ValidateUser(user *UserManager) bool {
 		}
 	}
 
-	return validReqFields
+	if validReqFields {
+		return true, nil
+	}
+
+	return false, fmt.Errorf("invalid entries for fields")
 }
 
-func (manager *UserManager) SetUserParams() *queries.User {
+func (manager *UserEntity) SetUserParams() *queries.User {
 	user := queries.User{
 		FirstName: manager.FirstName,
 		LastName:  manager.LastName,
 		Email:     manager.Email,
-		Phone: pgtype.Text{
-			String: manager.Phone,
-			Valid:  IsValidPhone(manager.Phone),
-		},
+		Phone:     manager.Phone,
 		Age: pgtype.Int4{
 			Int32: int32(manager.Age),
 			Valid: true,
@@ -51,13 +53,13 @@ func (manager *UserManager) SetUserParams() *queries.User {
 	return &user
 }
 
-func CreateUserMgrFromParams(params *queries.User) *UserManager {
-	return &UserManager{
+func CreateUserMgrFromParams(params *queries.User) *UserEntity {
+	return &UserEntity{
 		UID:       params.Userid.String(),
 		FirstName: params.FirstName,
 		LastName:  params.LastName,
 		Email:     params.Email,
-		Phone:     params.Phone.String,
+		Phone:     params.Phone,
 		Age:       uint32(params.Age.Int32),
 		Status:    params.Status.UserStatus,
 	}

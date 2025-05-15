@@ -20,3 +20,14 @@ WHERE userId = $7;
 -- name: DeleteUser :exec
 DELETE FROM "user" 
 WHERE userId = $1;
+
+-- name: CheckEmail :one
+SELECT 1 FROM "user"
+WHERE email = $1
+LIMIT 1;
+
+-- name: CheckPhone :one
+SELECT 1 FROM "user"
+WHERE phone = $1
+LIMIT 1;
+

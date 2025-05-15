@@ -7,7 +7,7 @@
 A scalable REST API for managing users, built with Go. It supports CRUD operations, email and mobile number uniqueness validation. The API uses PostgreSQL for persistent storage.
 
 ### Key Features
-- **User CRUD**: Create, read, update, and delete users with validated email uniqueness.
+- **User CRUD**: Create, read, update, and delete users with validated email and mobile number uniqueness.
 - **Tech Stack**: Go, Chi, Pgx (PostgreSQL).
 
 ## Prerequisites
@@ -43,10 +43,17 @@ docker run -d -p 5432:5432 -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -
 ```
 Create the `users` table:
 ```sql
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TYPE user_status AS ENUM ('Active', 'Inactive');
+
+CREATE TABLE IF NOT EXISTS "user" (
+                                      userId uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    first_name varchar(100) NOT NULL,
+    last_name varchar(100) NOT NULL,
+    email varchar(100) NOT NULL,
+    phone varchar(100),
+    age integer,
+    "status" user_status DEFAULT 'Active'
+    );
 ```

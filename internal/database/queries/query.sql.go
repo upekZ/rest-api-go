@@ -11,6 +11,32 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkEmail = `-- name: CheckEmail :one
+SELECT 1 FROM "user"
+WHERE email = $1
+LIMIT 1
+`
+
+func (q *Queries) CheckEmail(ctx context.Context, email string) (int32, error) {
+	row := q.db.QueryRow(ctx, checkEmail, email)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const checkPhone = `-- name: CheckPhone :one
+SELECT 1 FROM "user"
+WHERE phone = $1
+LIMIT 1
+`
+
+func (q *Queries) CheckPhone(ctx context.Context, phone string) (int32, error) {
+	row := q.db.QueryRow(ctx, checkPhone, phone)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const createUser = `-- name: CreateUser :exec
 INSERT INTO "user" (
     first_name, last_name, email, phone, age, "status"
@@ -22,7 +48,7 @@ type CreateUserParams struct {
 	FirstName string
 	LastName  string
 	Email     string
-	Phone     pgtype.Text
+	Phone     string
 	Age       pgtype.Int4
 	Status    NullUserStatus
 }
@@ -112,7 +138,7 @@ type UpdateUserParams struct {
 	FirstName string
 	LastName  string
 	Email     string
-	Phone     pgtype.Text
+	Phone     string
 	Age       pgtype.Int4
 	Status    NullUserStatus
 	Userid    pgtype.UUID

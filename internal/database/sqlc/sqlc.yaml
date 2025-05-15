@@ -9,5 +9,8 @@ sql:
     go: 
       package: "queries"
       out: "../../database/queries"
+      overrides:
+        - column: "user.phone"
+          go_type: "string"
       sql_package: "pgx/v5"
       emit_enum_valid_method: true

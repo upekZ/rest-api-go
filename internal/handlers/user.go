@@ -11,16 +11,16 @@ import (
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, user types.UserManager) error
+	CreateUser(ctx context.Context, user types.UserEntity) error
 	ListUsers(ctx context.Context) ([]queries.User, error)
-	GetUserByID(ctx context.Context, id string) (*types.UserManager, error)
+	GetUserByID(ctx context.Context, id string) (*types.UserEntity, error)
 	DeleteUser(ctx context.Context, id string) error
-	UpdateUser(ctx context.Context, id string, user *types.UserManager) error
+	UpdateUser(ctx context.Context, id string, user *types.UserEntity) error
 }
 
 func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 
-	var user types.UserManager
+	var user types.UserEntity
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
@@ -66,7 +66,7 @@ func (app *Server) GetByID(writer http.ResponseWriter, req *http.Request) {
 func (app *Server) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
-	var user types.UserManager
+	var user types.UserEntity
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)

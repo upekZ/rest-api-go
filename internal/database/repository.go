@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
@@ -55,7 +56,7 @@ func NewPostgresConn() (*PostgresConn, error) {
 	}, nil
 }
 
-func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserManager) error {
+func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserEntity) error {
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
@@ -89,7 +90,7 @@ func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error
 	return users, nil
 }
 
-func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *types.UserManager) error {
+func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *types.UserEntity) error {
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
@@ -151,7 +152,7 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 	return err
 }
 
-func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.UserManager, error) {
+func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.UserEntity, error) {
 
 	var uuidVal pgtype.UUID
 	if err := uuidVal.Scan(id); err != nil {
@@ -164,6 +165,32 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.
 	}
 	userManager := types.CreateUserMgrFromParams(&user)
 	return userManager, nil
+}
+
+func (pgConn *PostgresConn) IsEmailTaken(ctx context.Context, email string) (bool, error) {
+	return IsValueTaken(ctx, email, pgConn.queryHandler.CheckEmail)
+}
+
+func (pgConn *PostgresConn) IsPhoneTaken(ctx context.Context, phone string) (bool, error) {
+	return IsValueTaken(ctx, phone, pgConn.queryHandler.CheckPhone)
+}
+
+func IsValueTaken(ctx context.Context, value string, f func(context.Context, string) (int32, error)) (bool, error) {
+
+	found, err := f(ctx, value)
+
+	switch found {
+	case 0:
+		{
+			if errors.Is(err, sql.ErrNoRows) {
+				return false, nil
+			}
+			return false, err
+		}
+	case 1:
+		return true, err
+	}
+	return false, err
 }
 
 func handleRollBack(ctx context.Context, trx pgx.Tx) {
