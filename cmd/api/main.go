@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/upekZ/rest-api-go/internal/database"
 	"github.com/upekZ/rest-api-go/internal/handlers"
-	"github.com/upekZ/rest-api-go/internal/models"
+	"github.com/upekZ/rest-api-go/internal/services"
 )
 
 func main() {
@@ -15,9 +15,9 @@ func main() {
 		return
 	}
 
-	reqHandler := models.NewHandler(dbConn)
+	userService := services.NewUserService(dbConn)
 
-	app := handlers.NewServer(reqHandler)
+	app := handlers.NewServer(userService)
 
 	if err = app.Start(); err != nil {
 

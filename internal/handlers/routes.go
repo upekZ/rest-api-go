@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (app *App) loadRoutes() {
+func (app *Server) loadChiRoutes() *chi.Mux {
 	router := chi.NewRouter()
 
 	router.Use(middleware.Logger)
@@ -17,15 +17,15 @@ func (app *App) loadRoutes() {
 
 	router.Route("/users", app.loadUserRoutes)
 
-	app.router = router
+	return router
 }
 
-func (app *App) loadUserRoutes(router chi.Router) {
+func (app *Server) loadUserRoutes(router chi.Router) {
 
-	router.Post("/", app.handle.Create)
-	router.Get("/", app.handle.List)
-	router.Get("/{id}", app.handle.GetByID)
-	router.Patch("/{id}", app.handle.UpdateByID)
-	router.Delete("/{id}", app.handle.DeleteByID)
+	router.Post("/", app.Create)
+	router.Get("/", app.List)
+	router.Get("/{id}", app.GetByID)
+	router.Patch("/{id}", app.UpdateByID)
+	router.Delete("/{id}", app.DeleteByID)
 
 }

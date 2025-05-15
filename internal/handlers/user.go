@@ -1,34 +1,24 @@
-package models
+package handlers
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/upekZ/rest-api-go/internal/database/models"
+	"github.com/upekZ/rest-api-go/internal/database/queries"
 	"github.com/upekZ/rest-api-go/internal/types"
 	"net/http"
 )
 
-type DB interface {
-	GetUserByID(context.Context, string) (*types.UserManager, error)
-	DeleteUser(context.Context, string) error
-	UpdateUser(context.Context, string, *types.UserManager) error
-	GetUsers(context.Context) ([]models.User, error)
-	CreateUser(context.Context, *types.UserManager) error
+type Service interface {
+	CreateUser(ctx context.Context, user types.UserManager) error
+	ListUsers(ctx context.Context) ([]queries.User, error)
+	GetUserByID(ctx context.Context, id string) (*types.UserManager, error)
+	DeleteUser(ctx context.Context, id string) error
+	UpdateUser(ctx context.Context, id string, user *types.UserManager) error
 }
 
-type Handler struct {
-	db DB
-}
-
-func NewHandler(dbMnger DB) *Handler {
-	return &Handler{
-		db: dbMnger,
-	}
-}
-
-func (o *Handler) Create(writer http.ResponseWriter, req *http.Request) {
+func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 
 	var user types.UserManager
 
@@ -37,24 +27,17 @@ func (o *Handler) Create(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if types.ValidateUser(&user) {
-		err := o.db.CreateUser(req.Context(), &user)
-
-		if err != nil {
-			http.Error(writer, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		writer.WriteHeader(http.StatusCreated)
+	if err := app.service.CreateUser(req.Context(), user); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	http.Error(writer, "invalid user params", http.StatusBadRequest)
+	writer.WriteHeader(http.StatusCreated)
 
 }
 
-func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
+func (app *Server) List(writer http.ResponseWriter, req *http.Request) {
 
-	users, err := o.db.GetUsers(req.Context())
+	users, err := app.service.ListUsers(req.Context())
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -65,10 +48,10 @@ func (o *Handler) List(writer http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
+func (app *Server) GetByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
-	user, err := o.db.GetUserByID(req.Context(), userID)
+	user, err := app.service.GetUserByID(req.Context(), userID)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusNotFound)
@@ -80,7 +63,7 @@ func (o *Handler) GetByID(writer http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (o *Handler) UpdateByID(writer http.ResponseWriter, req *http.Request) {
+func (app *Server) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
 	var user types.UserManager
@@ -90,7 +73,7 @@ func (o *Handler) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := o.db.UpdateUser(req.Context(), userID, &user)
+	err := app.service.UpdateUser(req.Context(), userID, &user)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
@@ -100,11 +83,11 @@ func (o *Handler) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 	writer.WriteHeader(http.StatusOK)
 }
 
-func (o *Handler) DeleteByID(writer http.ResponseWriter, req *http.Request) {
+func (app *Server) DeleteByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
 
-	err := o.db.DeleteUser(req.Context(), userID)
+	err := app.service.DeleteUser(req.Context(), userID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

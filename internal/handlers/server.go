@@ -6,33 +6,21 @@ import (
 	"time"
 )
 
-type App struct {
-	router http.Handler
-	handle reqHandle
+type Server struct {
+	service Service
 }
 
-type reqHandle interface {
-	Create(writer http.ResponseWriter, req *http.Request)
-	List(writer http.ResponseWriter, req *http.Request)
-	GetByID(writer http.ResponseWriter, req *http.Request)
-	UpdateByID(writer http.ResponseWriter, req *http.Request)
-	DeleteByID(writer http.ResponseWriter, req *http.Request)
-}
-
-func NewServer(handle reqHandle) *App {
-
-	app := &App{
-		handle: handle,
+func NewServer(service Service) *Server {
+	return &Server{
+		service: service,
 	}
-	app.loadRoutes()
-	return app
 }
 
-func (app *App) Start() error {
+func (app *Server) Start() error {
 
 	server := &http.Server{
 		Addr:         ":3000",
-		Handler:      app.router,
+		Handler:      app.loadChiRoutes(),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
