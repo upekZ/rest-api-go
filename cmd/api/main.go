@@ -28,9 +28,9 @@ func main() {
 		return
 	}
 
-	app := handlers.NewServer(userService, hub)
-
 	go hub.Run()
+
+	app := handlers.NewServer(userService, hub)
 
 	fmt.Printf("web server initialization success\n")
 

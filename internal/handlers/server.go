@@ -56,7 +56,7 @@ func (app *Server) broadcastUserEvent(eventType string, user types.UserEntity) {
 	}
 	data, err := json.Marshal(event)
 	if err != nil {
-		// Log error in production.
+		fmt.Printf("broadcastUserEvent marshal failure: %v", err)
 		return
 	}
 	app.wsHandler.Broadcast(data)

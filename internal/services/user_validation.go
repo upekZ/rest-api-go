@@ -25,7 +25,7 @@ func (o *UserService) IsUniqueField(ctx context.Context, key string, value strin
 		}
 	case false:
 		switch key {
-		//To Do: Implement a mapping with unique filed --> function ptr
+		//To Do: Implement a mapping with unique field --> function ptr
 		case uniqueFields["Phone"]:
 			return o.db.IsPhoneUnique(ctx, value)
 		case uniqueFields["Email"]:

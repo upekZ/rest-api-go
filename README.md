@@ -1,14 +1,13 @@
 # REST API for CRUD operations using Go
 
 [![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8)](https://golang.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Overview
-A scalable REST API for managing users, built with Go. It supports CRUD operations, email and mobile number uniqueness validation. The API uses PostgreSQL for persistent storage.
+A REST API for managing users, built with Go. It supports CRUD operations, email and mobile number uniqueness validation. The API uses PostgreSQL for persistent storage.
 
 ### Key Features
 - **User CRUD**: Create, read, update, and delete users with validated email and mobile number uniqueness.
-- **Tech Stack**: Go, Chi, Pgx (PostgreSQL).
+- **Tech Stack**: Go, Chi, Pgx (PostgreSQL), Gorilla.
 
 ## Prerequisites
 - Go 1.20+
@@ -24,10 +23,10 @@ cd rest-api-go
 ```
 
 ### 2. Dependencies
-github.com/go-chi/chi/v5
-github.com/jackc/pgx/v5
-github.com/gorilla/websocket
-github.com/patrickmn/go-cache
+- github.com/go-chi/chi/v5
+- github.com/jackc/pgx/v5
+- github.com/gorilla/websocket
+- github.com/patrickmn/go-cache
 
 ### 3. Configure Environment
 Create a `.env` file:
@@ -59,5 +58,9 @@ CREATE TABLE IF NOT EXISTS "user" (
 
 ### ToDos
 
-Scripts to create user table in postgre instace
-complete Unit and integration tests
+- WebSocket Testing and instructions on running manual test
+- Implement websocket broadcast to User deletion and updating
+- Scripts to create user table in postgre instance
+- complete Unit and integration tests
+- extend caching for user retrieval
+- Websocket accepts any connection without validation. Could be improved with validation check
