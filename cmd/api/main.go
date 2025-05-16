@@ -6,7 +6,7 @@ import (
 	"github.com/upekZ/rest-api-go/internal/database"
 	"github.com/upekZ/rest-api-go/internal/handlers"
 	"github.com/upekZ/rest-api-go/internal/services"
-	Notifier "github.com/upekZ/rest-api-go/internal/websocket"
+	"github.com/upekZ/rest-api-go/internal/websocketService"
 )
 
 func main() {
@@ -18,14 +18,23 @@ func main() {
 	}
 
 	userCache := cache.NewCache()
+
 	userService := services.NewUserService(dbConn, userCache)
 
-	webSocket := Notifier.NewHub()
+	hub := websocketService.NewHub()
 
-	app := handlers.NewServer(userService, webSocket)
+	if hub == nil {
+		fmt.Printf("web socket initialization failed\n")
+		return
+	}
+
+	app := handlers.NewServer(userService, hub)
+
+	go hub.Run()
+
+	fmt.Printf("web server initialization success\n")
 
 	if err = app.Start(); err != nil {
-
 		fmt.Printf("server failure: %v\n", err)
 	}
 }

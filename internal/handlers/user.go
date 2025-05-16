@@ -39,6 +39,8 @@ func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 	if err := json.NewEncoder(writer).Encode(map[string]string{"message": "User created"}); err != nil {
 		log.Printf("Failed to write JSON response in user creation: %v", err)
 	}
+
+	app.broadcastUserEvent("created", user)
 	writer.WriteHeader(http.StatusCreated)
 
 }
