@@ -13,7 +13,7 @@ A scalable REST API for managing users, built with Go. It supports CRUD operatio
 ## Prerequisites
 - Go 1.20+
 - PostgreSQL 13+
-- Docker (optional, for running services)
+- Docker (for running services)
 
 ## Setup
 
@@ -23,24 +23,22 @@ git clone https://github.com/upekZ/rest-api-go.git
 cd rest-api-go
 ```
 
-### 2. Install Dependencies
-```bash
-go mod tidy
-go get github.com/go-chi/chi/v5
-go get github.com/jackc/pgx/v5
-```
+### 2. Dependencies
+github.com/go-chi/chi/v5
+github.com/jackc/pgx/v5
+github.com/gorilla/websocket
+github.com/patrickmn/go-cache
 
 ### 3. Configure Environment
 Create a `.env` file:
 ```env
 DATABASE_URL=postgres://user:password@localhost:5432/mydb
 ```
-
-### 4. Set Up PostgreSQL
-Run PostgreSQL (e.g., via Docker):
-```bash
-docker run -d -p 5432:5432 -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=mydb postgres:13
+Start PostgreSQL instance in Docker with docker-compose.yml:
+```env
+docker-compose up -d
 ```
+
 Create the `users` table:
 ```sql
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -57,3 +55,9 @@ CREATE TABLE IF NOT EXISTS "user" (
     "status" user_status DEFAULT 'Active'
     );
 ```
+
+
+### ToDos
+
+Scripts to create user table in postgre instace
+complete Unit and integration tests

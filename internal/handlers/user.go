@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/upekZ/rest-api-go/internal/database/queries"
+	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> types.UserEntity
 	"github.com/upekZ/rest-api-go/internal/types"
 	"log"
 	"net/http"
@@ -13,7 +13,7 @@ import (
 
 type Service interface {
 	CreateUser(ctx context.Context, user types.UserEntity) error
-	ListUsers(ctx context.Context) ([]queries.User, error)
+	ListUsers(ctx context.Context) ([]queries.User, error) //queries.User to be replaced with types.UserEntity
 	GetUserByID(ctx context.Context, id string) (*types.UserEntity, error)
 	DeleteUser(ctx context.Context, id string) error
 	UpdateUser(ctx context.Context, id string, user *types.UserEntity) error

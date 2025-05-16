@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/upekZ/rest-api-go/internal/database/queries"
+	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> types.UserEntity
 	"github.com/upekZ/rest-api-go/internal/types"
 )
 
@@ -16,7 +16,7 @@ type DB interface {
 	GetUserByID(context.Context, string) (*types.UserEntity, error)
 	DeleteUser(context.Context, string) error
 	UpdateUser(context.Context, string, *types.UserEntity) error
-	GetUsers(context.Context) ([]queries.User, error)
+	GetUsers(context.Context) ([]queries.User, error) //queries.User to be replaced with types.UserEntity
 	CreateUser(context.Context, *types.UserEntity) error
 	IsEmailUnique(context.Context, string) (bool, error)
 	IsPhoneUnique(context.Context, string) (bool, error)
@@ -40,6 +40,7 @@ func (o *UserService) CreateUser(ctx context.Context, user types.UserEntity) err
 		return fmt.Errorf("user validation failure: %v", err)
 	}
 
+	//To Do: Iterate through Unique fields (ie: Phone and Email) to validate uniqueness
 	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Phone"], user.Phone); !isUnique {
 		o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
 		return fmt.Errorf("user validation failure: %v", err)
