@@ -17,23 +17,17 @@ func NewCache() *Cache {
 	}
 }
 
-func (c *Cache) IsValueTaken(key string, value string) (bool, bool) {
+func (c *Cache) IsValueTaken(key string, value string) bool {
 	cacheKey := fmt.Sprintf("%s:%s:exists", key, value)
 
-	if val, found := c.cache.Get(cacheKey); found {
-		return val.(bool), true
-	}
+	_, found := c.cache.Get(cacheKey)
 
-	return false, false
+	return found
 }
 
 func (c *Cache) SetValue(key string, value string, exists bool) {
 	cacheKey := fmt.Sprintf("%s:%s:exists", key, value)
-	ttl := 24 * time.Hour
-	if !exists {
-		ttl = 10 * time.Minute
-	}
-	c.cache.Set(cacheKey, exists, ttl)
+	c.cache.Set(cacheKey, exists, 24*time.Hour)
 }
 
 func (c *Cache) DeleteField(key string, value string) {

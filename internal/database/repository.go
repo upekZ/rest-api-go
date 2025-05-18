@@ -61,6 +61,9 @@ func NewPostgresConn() (*PostgresConn, error) {
 
 func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserEntity) error {
 
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -84,6 +87,9 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserEnti
 
 func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error) {
 
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	users, err := pgConn.queryHandler.ListUsers(ctx)
 
 	if err != nil {
@@ -94,6 +100,9 @@ func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error
 }
 
 func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *types.UserEntity) error {
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
@@ -126,6 +135,9 @@ func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *ty
 
 func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -156,6 +168,9 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 }
 
 func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.UserEntity, error) {
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	var uuidVal pgtype.UUID
 	if err := uuidVal.Scan(id); err != nil {
