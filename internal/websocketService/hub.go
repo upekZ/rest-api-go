@@ -72,7 +72,7 @@ func (h *Hub) HandleWebSocket(w http.ResponseWriter, r *http.Request) error {
 
 	client := &Client{
 		conn: conn,
-		send: make(chan []byte),
+		send: make(chan []byte, 256),
 	}
 	h.register <- client
 

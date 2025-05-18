@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> types.UserEntity
 	"github.com/upekZ/rest-api-go/internal/types"
+	"net/http"
 )
 
 var uniqueFields = map[string]string{
@@ -22,15 +24,22 @@ type DB interface {
 	IsPhoneUnique(context.Context, string) (bool, error)
 }
 
-type UserService struct {
-	db    DB
-	cache Cache
+type WebSocketHandler interface {
+	HandleWebSocket(w http.ResponseWriter, r *http.Request) error
+	Broadcast(message []byte)
 }
 
-func NewUserService(db DB, cache Cache) *UserService {
+type UserService struct {
+	db        DB
+	cache     Cache
+	wsHandler WebSocketHandler
+}
+
+func NewUserService(db DB, cache Cache, wsHandler WebSocketHandler) *UserService {
 	return &UserService{
-		db:    db,
-		cache: cache,
+		db:        db,
+		cache:     cache,
+		wsHandler: wsHandler,
 	}
 }
 
@@ -56,6 +65,7 @@ func (o *UserService) CreateUser(ctx context.Context, user types.UserEntity) err
 
 	o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
 	o.cache.SetValue(uniqueFields["Email"], user.Email, true)
+	o.broadcastUserEvent("created", user)
 	return nil
 }
 
@@ -89,6 +99,7 @@ func (o *UserService) DeleteUser(ctx context.Context, userID string) error {
 
 	o.cache.DeleteField(uniqueFields["Phone"], user.Phone)
 	o.cache.DeleteField(uniqueFields["Email"], user.Email)
+
 	return nil
 }
 func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager *types.UserEntity) error {
@@ -96,4 +107,24 @@ func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager
 		return fmt.Errorf("user update failure in db: %w", err)
 	}
 	return nil
+}
+
+func (o *UserService) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
+	if err := o.wsHandler.HandleWebSocket(w, r); err != nil {
+		http.Error(w, "Could not handle WebSocket", http.StatusBadRequest)
+		return
+	}
+}
+
+func (o *UserService) broadcastUserEvent(eventType string, user types.UserEntity) {
+	event := map[string]interface{}{
+		"event": eventType,
+		"user":  user,
+	}
+	data, err := json.Marshal(event)
+	if err != nil {
+		fmt.Printf("broadcastUserEvent marshal failure: %v", err)
+		return
+	}
+	o.wsHandler.Broadcast(data)
 }

@@ -19,8 +19,6 @@ func main() {
 
 	userCache := cache.NewCache()
 
-	userService := services.NewUserService(dbConn, userCache)
-
 	hub := websocketService.NewHub()
 
 	if hub == nil {
@@ -30,7 +28,9 @@ func main() {
 
 	go hub.Run()
 
-	app := handlers.NewServer(userService, hub)
+	userService := services.NewUserService(dbConn, userCache, hub)
+
+	app := handlers.NewServer(userService)
 
 	fmt.Printf("web server initialization success\n")
 
