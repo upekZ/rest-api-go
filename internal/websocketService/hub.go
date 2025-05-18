@@ -3,7 +3,6 @@ package websocketService
 import (
 	"github.com/gorilla/websocket"
 	"net/http"
-	"sync"
 )
 
 type Hub struct {
@@ -11,7 +10,6 @@ type Hub struct {
 	broadcast  chan []byte
 	register   chan *Client
 	unregister chan *Client
-	mu         sync.Mutex
 }
 
 func NewHub() *Hub {
@@ -27,18 +25,13 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.register:
-			h.mu.Lock()
 			h.clients[client] = true
-			h.mu.Unlock()
 		case client := <-h.unregister:
-			h.mu.Lock()
 			if _, ok := h.clients[client]; ok {
 				close(client.send)
 				delete(h.clients, client)
 			}
-			h.mu.Unlock()
 		case message := <-h.broadcast:
-			h.mu.Lock()
 			for client := range h.clients {
 				select {
 				case client.send <- message:
@@ -47,7 +40,6 @@ func (h *Hub) Run() {
 					delete(h.clients, client)
 				}
 			}
-			h.mu.Unlock()
 		}
 	}
 }
