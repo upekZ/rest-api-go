@@ -1,18 +1,36 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:latest
-    container_name: my_postgres
+  app:
+    image: rest-imp-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "5432:5432"
+      - "3000:3000"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: justadummy
-      POSTGRES_DB: postgres
+      - DATABASE_DSN=host=db port=5432 user=postgres password=justadummy dbname=postgres sslmode=disable
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  db:
+    image: my-postgres-image:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=justadummy
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432" #Expose DB port to host for debugging
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
-  pgdata:
+  postgres_data:

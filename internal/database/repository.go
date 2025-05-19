@@ -49,7 +49,6 @@ func NewPostgresConn() (*PostgresConn, error) {
 	if err := pool.Ping(ctx); err != nil {
 		return nil, err
 	}
-	println("Pinged to database")
 
 	queryHandler := queries.New(pool)
 
