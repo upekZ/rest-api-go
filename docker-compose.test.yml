@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -16,7 +14,7 @@ services:
       - test-network
 
   db:
-    image: postgres:17.4
+    image: my-postgres-image:latest
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=justadummy
@@ -28,6 +26,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - test-network
+
+  integration-test:
+    build:
+      context: ./tests/integration
+      dockerfile: Dockerfile
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      - APP_HOST=app
+      - APP_PORT=3000
     networks:
       - test-network
 
