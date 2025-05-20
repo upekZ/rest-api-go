@@ -12,11 +12,11 @@ import (
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, user model.UserEntity) error
+	CreateUser(ctx context.Context, user *model.UserEntity) error
 	ListUsers(ctx context.Context) ([]queries.User, error) //queries.User to be replaced with model.UserEntity
 	GetUserByID(ctx context.Context, id string) (*model.UserEntity, error)
-	DeleteUser(ctx context.Context, id string) error
-	UpdateUser(ctx context.Context, id string, user *model.UserEntity) error
+	DeleteUser(ctx context.Context, id string) (*model.UserEntity, error)
+	UpdateUser(ctx context.Context, id string, user *model.UserEntity) (*model.UserEntity, error)
 	HandleWebSocket(w http.ResponseWriter, r *http.Request)
 }
 
@@ -33,14 +33,20 @@ func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err := app.service.CreateUser(req.Context(), user); err != nil {
+	if err := app.service.CreateUser(req.Context(), &user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if err := json.NewEncoder(writer).Encode(map[string]string{"message": "User created"}); err != nil {
 		log.Printf("Failed to write JSON response in user creation: %v", err)
 	}
-	writer.WriteHeader(http.StatusCreated)
+
+	if err := WriteJSON(writer, http.StatusCreated, user); err != nil {
+		log.Printf("Failed to write JSON response in user creation: %v", err)
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
+
+	log.Printf("User created: %s", user.UID)
 
 }
 
@@ -82,27 +88,31 @@ func (app *Server) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.service.UpdateUser(req.Context(), userID, &user)
+	_, err := app.service.UpdateUser(req.Context(), userID, &user)
 
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	writer.WriteHeader(http.StatusOK)
+	if err := WriteJSON(writer, http.StatusOK, user); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func (app *Server) DeleteByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
 
-	err := app.service.DeleteUser(req.Context(), userID)
+	user, err := app.service.DeleteUser(req.Context(), userID)
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	writer.WriteHeader(http.StatusCreated)
+	if err := WriteJSON(writer, http.StatusOK, user); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {

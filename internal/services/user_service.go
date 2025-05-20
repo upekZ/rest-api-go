@@ -43,30 +43,30 @@ func NewUserService(db DB, cache Cache, wsHandler WebSocketHandler) *UserService
 	}
 }
 
-func (o *UserService) CreateUser(ctx context.Context, user model.UserEntity) (model.UserEntity, error) {
+func (o *UserService) CreateUser(ctx context.Context, user *model.UserEntity) error {
 
-	if state, err := model.ValidateUser(&user); state == false {
-		return model.UserEntity{}, fmt.Errorf("user validation failure: %v", err)
+	if state, err := model.ValidateUser(user); state == false {
+		return fmt.Errorf("user validation failure: %v", err)
 	}
 
 	//To Do: Iterate through Unique fields (ie: Phone and Email) to validate uniqueness
 	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Phone"], user.Phone); !isUnique {
 		o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
-		return model.UserEntity{}, fmt.Errorf("user validation failure: %v", err)
+		return fmt.Errorf("user validation failure: %v", err)
 	}
 
 	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Email"], user.Email); !isUnique {
 		o.cache.SetValue(uniqueFields["Email"], user.Email, true)
-		return model.UserEntity{}, fmt.Errorf("user validation failure: %v", err)
+		return fmt.Errorf("user validation failure: %v", err)
 	}
-	if err := o.db.CreateUser(ctx, &user); err != nil {
-		return model.UserEntity{}, fmt.Errorf("user creation failure in db: %v", err)
+	if err := o.db.CreateUser(ctx, user); err != nil {
+		return fmt.Errorf("user creation failure in db: %v", err)
 	}
 
 	o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
 	o.cache.SetValue(uniqueFields["Email"], user.Email, true)
-	o.broadcastUserEvent("created", user)
-	return user, nil
+	o.broadcastUserEvent("created", *user)
+	return nil
 }
 
 func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
@@ -78,35 +78,36 @@ func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
 	return users, nil
 }
 
-func (o *UserService) GetUserByID(ctx context.Context, userID string) (model.UserEntity, error) {
+func (o *UserService) GetUserByID(ctx context.Context, userID string) (*model.UserEntity, error) {
 	user, err := o.db.GetUserByID(ctx, userID)
 	if err != nil || user == nil {
-		return model.UserEntity{}, fmt.Errorf("user retrieval failure in db: %w", err)
+		return nil, fmt.Errorf("user retrieval failure in db: %w", err)
 	}
 
-	return *user, nil
+	return user, nil
 }
 
-func (o *UserService) DeleteUser(ctx context.Context, userID string) (model.UserEntity, error) {
+func (o *UserService) DeleteUser(ctx context.Context, userID string) (*model.UserEntity, error) {
 
 	user, err := o.db.GetUserByID(ctx, userID)
 	if err != nil || user == nil {
-		return model.UserEntity{}, fmt.Errorf("user not found: %w", err)
+		return nil, fmt.Errorf("user not found: %w", err)
 	}
 	if err := o.db.DeleteUser(ctx, userID); err != nil {
-		return model.UserEntity{}, fmt.Errorf("user deletion failure in db: %w", err)
+		return nil, fmt.Errorf("user deletion failure in db: %w", err)
 	}
 
 	o.cache.DeleteField(uniqueFields["Phone"], user.Phone)
 	o.cache.DeleteField(uniqueFields["Email"], user.Email)
 
-	return *user, nil
+	return user, nil
 }
-func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager *model.UserEntity) (model.UserEntity, error) {
+
+func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager *model.UserEntity) (*model.UserEntity, error) {
 	if err := o.db.UpdateUser(ctx, userID, userManager); err != nil {
-		return model.UserEntity{}, fmt.Errorf("user update failure in db: %w", err)
+		return nil, fmt.Errorf("user update failure in db: %w", err)
 	}
-	return *userManager, nil
+	return userManager, nil
 }
 
 func (o *UserService) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
