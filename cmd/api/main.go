@@ -22,7 +22,7 @@ func main() {
 	hub := websocketService.NewHub()
 
 	if hub == nil {
-		fmt.Printf("web socket initialization failed\n")
+		fmt.Printf("web socksdet initialization failed\n")
 		return
 	}
 

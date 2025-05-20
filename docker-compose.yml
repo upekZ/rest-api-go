@@ -2,16 +2,26 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: golang:1.24-alpine
+    working_dir: /app
+    volumes:
+      - /c/dev/rest-imp:/app
     ports:
       - "3000:3000"
     environment:
       - DATABASE_DSN=host=db port=5432 user=postgres password=justadummy dbname=postgres sslmode=disable
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -xe
+        go install github.com/air-verse/air@latest
+        air --build.cmd "go build -o ./server ./cmd/api/main.go" --build.bin "./server"
+
     networks:
       - app-network
 

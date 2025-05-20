@@ -69,7 +69,7 @@ ALTER TABLE public."user" OWNER TO postgres;
 --
 
 COPY public."user" (userid, first_name, last_name, email, phone, age, status) FROM stdin;
-c23fb4eb-8827-436e-8686-b9b20b765ce1	Modified	LastName	newe345mail@gmail.com	07623538234321	10	Active
+c23fb4eb-8827-436e-8686-b9b20b765ce1	adminUser	localAdmin	newe345mail@gmail.com	07623538234321	10	Active
 \.
 
 

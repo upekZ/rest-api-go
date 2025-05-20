@@ -2,8 +2,6 @@
 
  WORKDIR /app
 
- RUN go install github.com/air-verse/air@latest
-
  COPY go.mod go.sum ./
 
  RUN go mod download
@@ -20,5 +18,4 @@
 
  EXPOSE 3000
 
- # Command to run the application
  CMD ["./main"]

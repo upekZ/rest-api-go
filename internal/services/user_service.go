@@ -70,7 +70,7 @@ func (o *UserService) CreateUser(ctx context.Context, user *model.UserEntity) er
 }
 
 func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
-
+	fmt.Println("t12e1SCscS2st")
 	users, err := o.db.GetUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("user retrieval failure in db: %w", err)
