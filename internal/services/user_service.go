@@ -70,7 +70,7 @@ func (o *UserService) CreateUser(ctx context.Context, user *model.UserEntity) er
 }
 
 func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
-	fmt.Println("t12e1SCscS2st")
+	fmt.Println("Tesadfadft Logs")
 	users, err := o.db.GetUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("user retrieval failure in db: %w", err)
@@ -112,7 +112,7 @@ func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager
 
 func (o *UserService) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	if err := o.wsHandler.HandleWebSocket(w, r); err != nil {
-		http.Error(w, "Could not handle WebSocket", http.StatusBadRequest)
+		http.Error(w, "could not handle websocket", http.StatusBadRequest)
 		return
 	}
 }

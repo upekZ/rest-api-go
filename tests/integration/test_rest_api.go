@@ -100,7 +100,7 @@ func TestCreateUser(t *testing.T) {
 	defer pool.Close()
 
 	var count int
-	err = pool.QueryRow(context.Background(), `SELECT COUNT(*) FROM "user" WHERE email = $1`, "jane.doe@example.com").Scan(&count)
+	err = pool.QueryRow(context.Background(), `SELECT COUNT(*) FROM "user" WHERE email = $1`, "create.test@test.com").Scan(&count)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, count)
 }
