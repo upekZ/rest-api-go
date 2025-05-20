@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/upekZ/rest-api-go/internal/database/queries"
-	"github.com/upekZ/rest-api-go/internal/types"
+	"github.com/upekZ/rest-api-go/internal/model"
 	"os"
 	"runtime"
 	"time"
@@ -58,7 +58,7 @@ func NewPostgresConn() (*PostgresConn, error) {
 	}, nil
 }
 
-func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *types.UserEntity) error {
+func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *model.UserEntity) error {
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -98,7 +98,7 @@ func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error
 	return users, nil
 }
 
-func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *types.UserEntity) error {
+func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *model.UserEntity) error {
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -166,7 +166,7 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 	return err
 }
 
-func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.UserEntity, error) {
+func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*model.UserEntity, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -180,7 +180,7 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*types.
 	if err != nil {
 		return nil, fmt.Errorf("query execution failure for account [%s] error: %w", id, err)
 	}
-	userManager := types.CreateUserMgrFromParams(&user)
+	userManager := model.CreateUserMgrFromParams(&user)
 	return userManager, nil
 }
 

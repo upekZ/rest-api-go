@@ -5,18 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> types.UserEntity
-	"github.com/upekZ/rest-api-go/internal/types"
+	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> model.UserEntity
+	"github.com/upekZ/rest-api-go/internal/model"
 	"log"
 	"net/http"
 )
 
 type Service interface {
-	CreateUser(ctx context.Context, user types.UserEntity) error
-	ListUsers(ctx context.Context) ([]queries.User, error) //queries.User to be replaced with types.UserEntity
-	GetUserByID(ctx context.Context, id string) (*types.UserEntity, error)
+	CreateUser(ctx context.Context, user model.UserEntity) error
+	ListUsers(ctx context.Context) ([]queries.User, error) //queries.User to be replaced with model.UserEntity
+	GetUserByID(ctx context.Context, id string) (*model.UserEntity, error)
 	DeleteUser(ctx context.Context, id string) error
-	UpdateUser(ctx context.Context, id string, user *types.UserEntity) error
+	UpdateUser(ctx context.Context, id string, user *model.UserEntity) error
 	HandleWebSocket(w http.ResponseWriter, r *http.Request)
 }
 
@@ -26,7 +26,7 @@ type Channel interface {
 
 func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 
-	var user types.UserEntity
+	var user model.UserEntity
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
@@ -75,7 +75,7 @@ func (app *Server) GetByID(writer http.ResponseWriter, req *http.Request) {
 func (app *Server) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 
 	userID := chi.URLParam(req, "id")
-	var user types.UserEntity
+	var user model.UserEntity
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
