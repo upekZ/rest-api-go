@@ -40,7 +40,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_primary_data:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -49,4 +49,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  postgres_primary_data:

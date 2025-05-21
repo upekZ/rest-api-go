@@ -14,7 +14,7 @@ services:
       - test-network
 
   db:
-    image: my-postgres-image:latest
+    image: my-test-postgres-image:latest
     build:
       context: postgres-image/
       dockerfile: Dockerfile
