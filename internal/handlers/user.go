@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> model.UserEntity
 	"github.com/upekZ/rest-api-go/internal/model"
-	"log"
 	"net/http"
 )
 
@@ -41,9 +40,6 @@ func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 	if err := WriteJSON(writer, http.StatusCreated, user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
-
-	log.Printf("User created: %s", user.UID)
-
 }
 
 func (app *Server) List(writer http.ResponseWriter, req *http.Request) {
