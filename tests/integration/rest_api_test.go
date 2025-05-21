@@ -14,15 +14,17 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
+var user = map[string]interface{}{
+	"firstName": "create",
+	"lastName":  "test",
+	"email":     "create1.test@test.com",
+	"phone":     "901129210921",
+	"age":       25,
+	"status":    "Active",
+}
+
 func TestCreateUser(t *testing.T) {
-	user := map[string]interface{}{
-		"firstName": "create",
-		"lastName":  "test",
-		"email":     "create1.test@test.com",
-		"phone":     "901129210921",
-		"age":       25,
-		"status":    "Active",
-	}
+
 	body, _ := json.Marshal(user)
 
 	appHost := os.Getenv("APP_HOST")
@@ -67,7 +69,6 @@ func TestGetUser(t *testing.T) {
 	err = json.NewDecoder(response.Body).Decode(&users)
 	assert.NoError(t, err)
 
-	assert.GreaterOrEqual(t, len(users), 1)
-	assert.Equal(t, "create", users[0]["first_name"])
-	assert.Equal(t, 25, users[0]["age"])
+	assert.Equal(t, "create", users[0]["FirstName"])
+	assert.Equal(t, float64(25), users[0]["Age"])
 }
