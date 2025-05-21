@@ -25,6 +25,9 @@ services:
 
   db:
     image: my-postgres-image:latest
+    build:
+      context: postgres-image/
+      dockerfile: Dockerfile
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=justadummy
