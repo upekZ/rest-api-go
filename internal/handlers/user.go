@@ -27,22 +27,18 @@ type Channel interface {
 func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 
 	var user model.UserEntity
-	fmt.Printf("User creation requested")
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
-		fmt.Println("Error decoding body: %v", err.Error())
 		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if err := app.service.CreateUser(req.Context(), &user); err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
-		fmt.Println("Error creating user: %v", err.Error())
 		return
 	}
 
 	if err := WriteJSON(writer, http.StatusCreated, user); err != nil {
-		log.Printf("Failed to write JSON response in user creation: %v", err)
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 

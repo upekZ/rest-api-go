@@ -81,8 +81,6 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *model.UserEnti
 		return fmt.Errorf("DB commit error: %w", err)
 	}
 
-	fmt.Printf("User created successfully")
-
 	return nil
 }
 
