@@ -16,12 +16,12 @@ func TestMain(m *testing.M) {
 
 func TestCreateUser(t *testing.T) {
 	user := map[string]interface{}{
-		"first_name": "create",
-		"last_name":  "test",
-		"email":      "create1.test@test.com",
-		"phone":      "901129210921",
-		"age":        25,
-		"status":     "active",
+		"firstName": "create",
+		"lastName":  "test",
+		"email":     "create1.test@test.com",
+		"phone":     "901129210921",
+		"age":       25,
+		"status":    "Active",
 	}
 	body, _ := json.Marshal(user)
 
@@ -40,13 +40,12 @@ func TestCreateUser(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, response.StatusCode)
 
-	var users []map[string]interface{}
-	err = json.NewDecoder(response.Body).Decode(&users)
+	var createdUser map[string]interface{}
+	err = json.NewDecoder(response.Body).Decode(&createdUser)
 	assert.NoError(t, err)
 
-	assert.GreaterOrEqual(t, len(users), 1)
-	assert.Equal(t, "upeka", users[0]["first_name"])
-	assert.Equal(t, 29, users[0]["age"])
+	assert.Equal(t, "create", createdUser["firstName"])
+	assert.Equal(t, float64(25), createdUser["age"])
 }
 
 func TestGetUser(t *testing.T) {
