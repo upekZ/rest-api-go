@@ -50,17 +50,17 @@ func (o *UserService) CreateUser(ctx context.Context, user *model.UserEntity) er
 	}
 
 	//To Do: Iterate through Unique fields (ie: Phone and Email) to validate uniqueness
-	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Phone"], user.Phone); !isUnique {
+	if isUnique, _ := o.IsUniqueField(ctx, uniqueFields["Phone"], user.Phone); !isUnique {
 		o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
-		return fmt.Errorf("user validation failure: %v", err)
+		return fmt.Errorf("phone number already attached to a user")
 	}
 
-	if isUnique, err := o.IsUniqueField(ctx, uniqueFields["Email"], user.Email); !isUnique {
+	if isUnique, _ := o.IsUniqueField(ctx, uniqueFields["Email"], user.Email); !isUnique {
 		o.cache.SetValue(uniqueFields["Email"], user.Email, true)
-		return fmt.Errorf("user validation failure: %v", err)
+		return fmt.Errorf("email already attached to a user")
 	}
 	if err := o.db.CreateUser(ctx, user); err != nil {
-		return fmt.Errorf("user creation failure in db: %v", err)
+		return fmt.Errorf("user creation failure in db")
 	}
 
 	o.cache.SetValue(uniqueFields["Phone"], user.Phone, true)
