@@ -3,8 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/upekZ/rest-api-go/internal/database/queries"
 	"github.com/upekZ/rest-api-go/internal/model"
 	"net/http"
 	"testing"
@@ -38,9 +36,9 @@ func (m *MockUserDB) GetUserByID(ctx context.Context, id string) (*model.UserEnt
 	return args.Get(0).(*model.UserEntity), args.Error(1)
 }
 
-func (m *MockUserDB) GetUsers(ctx context.Context) ([]queries.User, error) {
+func (m *MockUserDB) GetUsers(ctx context.Context) ([]model.UserEntity, error) {
 	args := m.Called(ctx)
-	return args.Get(0).([]queries.User), args.Error(1)
+	return args.Get(0).([]model.UserEntity), args.Error(1)
 }
 
 func (m *MockUserDB) IsEmailUnique(context.Context, string) (bool, error) {
@@ -216,12 +214,12 @@ func TestUserService_GetUsers(t *testing.T) {
 	mockCache := &MockUserCache{}
 	service := NewUserService(mockDB, mockCache, mockWS)
 
-	uId1 := pgtype.UUID{uuid.New(), true}
-	uId2 := pgtype.UUID{uuid.New(), true}
+	uId1 := uuid.New().String()
+	uId2 := uuid.New().String()
 
-	expectedUsers := []queries.User{
-		{Userid: uId1, FirstName: "userfirst", LastName: "userlast", Email: "firstmail@unittest.com"},
-		{Userid: uId2, FirstName: "newfirst", LastName: "newlast", Email: "secondmail@unittest.com"},
+	expectedUsers := []model.UserEntity{
+		{UID: uId1, FirstName: "userfirst", LastName: "userlast", Email: "firstmail@unittest.com"},
+		{UID: uId2, FirstName: "newfirst", LastName: "newlast", Email: "secondmail@unittest.com"},
 	}
 
 	mockDB.On("GetUsers", mock.Anything).Return(expectedUsers, nil)

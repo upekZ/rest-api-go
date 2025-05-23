@@ -17,7 +17,7 @@ type DB interface {
 	GetUserByID(context.Context, string) (*model.UserEntity, error)
 	DeleteUser(context.Context, string) error
 	UpdateUser(context.Context, string, *model.UserEntity) error
-	GetUsers(context.Context) ([]model.UserEntity, error) //queries.User to be replaced with model.UserEntity
+	GetUsers(context.Context) ([]model.UserEntity, error)
 	CreateUser(context.Context, *model.UserEntity) error
 	IsEmailUnique(context.Context, string) (bool, error)
 	IsPhoneUnique(context.Context, string) (bool, error)

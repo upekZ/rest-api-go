@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/hex"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/upekZ/rest-api-go/internal/database/queries"
@@ -82,8 +81,6 @@ func ConvertUsersToEntities(users []dbUser) []UserEntity {
 
 	entities := make([]UserEntity, 0, len(users))
 
-	uuidBuf := make([]byte, 36)
-
 	for _, user := range users {
 		entity := UserEntity{
 			FirstName: user.FirstName,
@@ -93,12 +90,7 @@ func ConvertUsersToEntities(users []dbUser) []UserEntity {
 		}
 
 		if user.Userid.Valid {
-			hex.Encode(uuidBuf[:], user.Userid.Bytes[:])
-			uuidBuf[8] = '-'
-			uuidBuf[13] = '-'
-			uuidBuf[18] = '-'
-			uuidBuf[23] = '-'
-			entity.UID = string(uuidBuf[:])
+			entity.UID = user.Userid.String()
 		} else {
 			entity.UID = ""
 		}
