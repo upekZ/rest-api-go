@@ -19,19 +19,14 @@ type UserEntity struct {
 
 func ValidateUser(user *UserEntity) (bool, error) {
 
-	var validReqFields = (IsValidEmail(user.Email)) && IsValidName(user.FirstName) && IsValidName(user.LastName)
-
-	if validReqFields {
-		if !(IsValidPhone(user.Phone)) {
-			user.Phone = ""
-		}
+	if !(IsValidName(user.FirstName) && IsValidName(user.LastName)) {
+		return false, fmt.Errorf("invalid format for name")
+	}
+	if !IsValidEmail(user.Email) {
+		return false, fmt.Errorf("invalid email")
 	}
 
-	if validReqFields {
-		return true, nil
-	}
-
-	return false, fmt.Errorf("invalid entries for fields")
+	return true, nil
 }
 
 func (manager *UserEntity) SetUserParams() *queries.User {

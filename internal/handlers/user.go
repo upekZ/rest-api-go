@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> model.UserEntity
 	"github.com/upekZ/rest-api-go/internal/model"
@@ -28,17 +27,17 @@ func (app *Server) Create(writer http.ResponseWriter, req *http.Request) {
 	var user model.UserEntity
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
-		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
+		http.Error(writer, "users creation failure", http.StatusInternalServerError)
 		return
 	}
 
 	if err := app.service.CreateUser(req.Context(), &user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "users creation failure", http.StatusInternalServerError)
 		return
 	}
 
 	if err := WriteJSON(writer, http.StatusCreated, user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "users creation failure", http.StatusInternalServerError)
 	}
 }
 
@@ -47,11 +46,12 @@ func (app *Server) List(writer http.ResponseWriter, req *http.Request) {
 	users, err := app.service.ListUsers(req.Context())
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "no users found", http.StatusInternalServerError)
+		return
 	}
 
 	if err := WriteJSON(writer, http.StatusOK, users); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "no users found", http.StatusInternalServerError)
 	}
 }
 
@@ -61,12 +61,12 @@ func (app *Server) GetByID(writer http.ResponseWriter, req *http.Request) {
 	user, err := app.service.GetUserByID(req.Context(), userID)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusNotFound)
+		http.Error(writer, "user not found", http.StatusNotFound)
 		return
 	}
 
 	if err := WriteJSON(writer, http.StatusCreated, user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "user not found", http.StatusInternalServerError)
 	}
 }
 
@@ -76,19 +76,19 @@ func (app *Server) UpdateByID(writer http.ResponseWriter, req *http.Request) {
 	var user model.UserEntity
 
 	if err := json.NewDecoder(req.Body).Decode(&user); err != nil {
-		http.Error(writer, fmt.Errorf("decoding failure %w", err).Error(), http.StatusInternalServerError)
+		http.Error(writer, "user not found", http.StatusInternalServerError)
 		return
 	}
 
 	_, err := app.service.UpdateUser(req.Context(), userID, &user)
 
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "users update failure", http.StatusInternalServerError)
 		return
 	}
 
 	if err := WriteJSON(writer, http.StatusOK, user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "users update failure", http.StatusInternalServerError)
 	}
 }
 
@@ -98,12 +98,12 @@ func (app *Server) DeleteByID(writer http.ResponseWriter, req *http.Request) {
 
 	user, err := app.service.DeleteUser(req.Context(), userID)
 	if err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "users deletion failure", http.StatusInternalServerError)
 		return
 	}
 
 	if err := WriteJSON(writer, http.StatusOK, user); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
+		http.Error(writer, "users update failure", http.StatusInternalServerError)
 	}
 }
 

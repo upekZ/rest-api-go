@@ -41,13 +41,12 @@ func NewPostgresConn() (*PostgresConn, error) {
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolconfig)
 	if err != nil {
-		return nil, err
+		//Need to add a logger
+		return nil, fmt.Errorf("error connecting to database: configuration error")
 	}
 
-	println("Connected to database")
-
 	if err := pool.Ping(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error connecting to database: ping error")
 	}
 
 	queryHandler := queries.New(pool)
@@ -65,7 +64,7 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *model.UserEnti
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("failed to begin transaction")
 	}
 	defer handleRollBack(ctx, tx)
 
@@ -74,11 +73,11 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *model.UserEnti
 		Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status})
 
 	if err != nil {
-		return fmt.Errorf("error in user creation: %w", err)
+		return fmt.Errorf("error in user creation")
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("DB commit error: %w", err)
+		return fmt.Errorf("DB commit error")
 	}
 
 	return nil
@@ -92,7 +91,7 @@ func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error
 	users, err := pgConn.queryHandler.ListUsers(ctx)
 
 	if err != nil {
-		return nil, fmt.Errorf("DB select error: %w", err)
+		return nil, fmt.Errorf("database query error in user listing")
 	}
 
 	return users, nil
@@ -105,14 +104,14 @@ func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *mo
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("failed to begin transaction")
 	}
 	defer handleRollBack(ctx, tx)
 
 	var uuidVal pgtype.UUID
 	err = uuidVal.Scan(uID)
 	if err != nil {
-		return fmt.Errorf("user id parsing failure: %w", err)
+		return fmt.Errorf("user id parsing failure")
 	}
 
 	params := user.SetUserParams()
@@ -122,11 +121,11 @@ func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *mo
 			Email: params.Email, Phone: params.Phone, Age: params.Age, Status: params.Status, Userid: uuidVal})
 
 	if err != nil {
-		return fmt.Errorf("user update failure: %w", err)
+		return fmt.Errorf("user update failure")
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("DB commit error: %w", err)
+		return fmt.Errorf("DB commit error")
 	}
 
 	return err
@@ -139,28 +138,28 @@ func (pgConn *PostgresConn) DeleteUser(ctx context.Context, id string) error {
 
 	tx, err := pgConn.pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return fmt.Errorf("failed to begin transaction")
 	}
 	defer handleRollBack(ctx, tx)
 
 	var uuidVal pgtype.UUID
 	err = uuidVal.Scan(id)
 	if err != nil {
-		return fmt.Errorf("user id parsing failure: %w", err)
+		return fmt.Errorf("user id parsing failure")
 	}
 
 	_, err = pgConn.queryHandler.GetUser(ctx, uuidVal)
 	if err != nil {
-		return fmt.Errorf("user: [%s] not found. error: %w", id, err)
+		return fmt.Errorf("user: [%s] not found. error", id)
 	}
 
 	err = pgConn.queryHandler.WithTx(tx).DeleteUser(context.Background(), uuidVal)
 	if err != nil {
-		return fmt.Errorf("user deletion failure: %w", err)
+		return fmt.Errorf("user [%s] deletion failure", id)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("DB commit error: %w", err)
+		return fmt.Errorf("DB commit error")
 	}
 
 	return err
@@ -173,12 +172,12 @@ func (pgConn *PostgresConn) GetUserByID(ctx context.Context, id string) (*model.
 
 	var uuidVal pgtype.UUID
 	if err := uuidVal.Scan(id); err != nil {
-		return nil, fmt.Errorf("user id parsing failure: %w", err)
+		return nil, fmt.Errorf("user id [%s] parsing failure", id)
 	}
 
 	user, err := pgConn.queryHandler.GetUser(ctx, uuidVal)
 	if err != nil {
-		return nil, fmt.Errorf("query execution failure for account [%s] error: %w", id, err)
+		return nil, fmt.Errorf("query execution failure for account [%s]", id)
 	}
 	userManager := model.CreateUserMgrFromParams(&user)
 	return userManager, nil
@@ -202,7 +201,7 @@ func IsValueUnique(ctx context.Context, value string, f func(context.Context, st
 			if errors.Is(err, sql.ErrNoRows) {
 				return true, nil
 			}
-			return false, err
+			return false, fmt.Errorf("duplicate value [%s]", value)
 		}
 	case 1:
 		return false, fmt.Errorf("duplicate value [%s]", value)
@@ -212,6 +211,6 @@ func IsValueUnique(ctx context.Context, value string, f func(context.Context, st
 
 func handleRollBack(ctx context.Context, trx pgx.Tx) {
 	if err := trx.Rollback(ctx); err != nil && !errors.Is(err, pgx.ErrTxClosed) {
-		fmt.Printf("transaction roll-back failure: %v", err)
+		fmt.Printf("transaction roll-back failure") //ToDo convert to logs
 	}
 }

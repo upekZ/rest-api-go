@@ -72,7 +72,7 @@ func (o *UserService) CreateUser(ctx context.Context, user *model.UserEntity) er
 func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
 	users, err := o.db.GetUsers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("user retrieval failure in db: %w", err)
+		return nil, fmt.Errorf("user retrieval failure in db")
 	}
 	return users, nil
 }
@@ -80,7 +80,7 @@ func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
 func (o *UserService) GetUserByID(ctx context.Context, userID string) (*model.UserEntity, error) {
 	user, err := o.db.GetUserByID(ctx, userID)
 	if err != nil || user == nil {
-		return nil, fmt.Errorf("user retrieval failure in db: %w", err)
+		return nil, fmt.Errorf("user retrieval failure in db")
 	}
 
 	return user, nil
@@ -90,10 +90,10 @@ func (o *UserService) DeleteUser(ctx context.Context, userID string) (*model.Use
 
 	user, err := o.db.GetUserByID(ctx, userID)
 	if err != nil || user == nil {
-		return nil, fmt.Errorf("user not found: %w", err)
+		return nil, fmt.Errorf("user [%s] not found", userID)
 	}
 	if err := o.db.DeleteUser(ctx, userID); err != nil {
-		return nil, fmt.Errorf("user deletion failure in db: %w", err)
+		return nil, fmt.Errorf("user deletion failure in db")
 	}
 
 	o.cache.DeleteField(uniqueFields["Phone"], user.Phone)
@@ -104,14 +104,14 @@ func (o *UserService) DeleteUser(ctx context.Context, userID string) (*model.Use
 
 func (o *UserService) UpdateUser(ctx context.Context, userID string, userManager *model.UserEntity) (*model.UserEntity, error) {
 	if err := o.db.UpdateUser(ctx, userID, userManager); err != nil {
-		return nil, fmt.Errorf("user update failure in db: %w", err)
+		return nil, fmt.Errorf("user update failure in db")
 	}
 	return userManager, nil
 }
 
 func (o *UserService) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	if err := o.wsHandler.HandleWebSocket(w, r); err != nil {
-		http.Error(w, "could not handle websocket", http.StatusBadRequest)
+		http.Error(w, "websocket handler failure", http.StatusInternalServerError)
 		return
 	}
 }
@@ -123,7 +123,7 @@ func (o *UserService) broadcastUserEvent(eventType string, user model.UserEntity
 	}
 	data, err := json.Marshal(event)
 	if err != nil {
-		fmt.Printf("broadcastUserEvent marshal failure: %v", err)
+		fmt.Printf("json marshal for web-sockets failure:") // ToDo convert to logging
 		return
 	}
 	o.wsHandler.Broadcast(data)

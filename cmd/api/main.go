@@ -21,11 +21,6 @@ func main() {
 
 	hub := websocketService.NewHub()
 
-	if hub == nil {
-		fmt.Printf("web socksdet initialization failed\n")
-		return
-	}
-
 	go hub.Run()
 
 	userService := services.NewUserService(dbConn, userCache, hub)
