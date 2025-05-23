@@ -1,11 +1,14 @@
 package model
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/upekZ/rest-api-go/internal/database/queries"
 	"regexp"
 )
+
+type dbUser = queries.User
 
 type UserEntity struct {
 	UID       string             `json:"userId"`
@@ -73,4 +76,50 @@ func IsValidPhone(number string) bool {
 func IsValidName(name string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z\s'-]{2,50}$`)
 	return re.MatchString(name)
+}
+
+func ConvertUsersToEntities(users []dbUser) []UserEntity {
+
+	entities := make([]UserEntity, 0, len(users))
+
+	uuidBuf := make([]byte, 36)
+
+	for _, user := range users {
+		entity := UserEntity{
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			Phone:     user.Phone,
+		}
+
+		if user.Userid.Valid {
+			hex.Encode(uuidBuf[:], user.Userid.Bytes[:])
+			uuidBuf[8] = '-'
+			uuidBuf[13] = '-'
+			uuidBuf[18] = '-'
+			uuidBuf[23] = '-'
+			entity.UID = string(uuidBuf[:])
+		} else {
+			entity.UID = ""
+		}
+		if user.Age.Valid {
+			if user.Age.Int32 >= 0 {
+				entity.Age = uint32(user.Age.Int32)
+			} else {
+				entity.Age = 0
+			}
+		} else {
+			entity.Age = 0
+		}
+
+		if user.Status.Valid {
+			entity.Status = user.Status.UserStatus
+		} else {
+			entity.Status = ""
+		}
+
+		entities = append(entities, entity)
+	}
+
+	return entities
 }

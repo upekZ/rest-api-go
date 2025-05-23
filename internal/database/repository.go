@@ -83,18 +83,20 @@ func (pgConn *PostgresConn) CreateUser(ctx context.Context, user *model.UserEnti
 	return nil
 }
 
-func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]queries.User, error) {
+func (pgConn *PostgresConn) GetUsers(ctx context.Context) ([]model.UserEntity, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	users, err := pgConn.queryHandler.ListUsers(ctx)
 
+	userEntities := model.ConvertUsersToEntities(users)
+
 	if err != nil {
 		return nil, fmt.Errorf("database query error in user listing")
 	}
 
-	return users, nil
+	return userEntities, nil
 }
 
 func (pgConn *PostgresConn) UpdateUser(ctx context.Context, uID string, user *model.UserEntity) error {

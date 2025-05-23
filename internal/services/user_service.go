@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> model.UserEntity
 	"github.com/upekZ/rest-api-go/internal/model"
 	"net/http"
 )
@@ -18,7 +17,7 @@ type DB interface {
 	GetUserByID(context.Context, string) (*model.UserEntity, error)
 	DeleteUser(context.Context, string) error
 	UpdateUser(context.Context, string, *model.UserEntity) error
-	GetUsers(context.Context) ([]queries.User, error) //queries.User to be replaced with model.UserEntity
+	GetUsers(context.Context) ([]model.UserEntity, error) //queries.User to be replaced with model.UserEntity
 	CreateUser(context.Context, *model.UserEntity) error
 	IsEmailUnique(context.Context, string) (bool, error)
 	IsPhoneUnique(context.Context, string) (bool, error)
@@ -69,7 +68,7 @@ func (o *UserService) CreateUser(ctx context.Context, user *model.UserEntity) er
 	return nil
 }
 
-func (o *UserService) ListUsers(ctx context.Context) ([]queries.User, error) {
+func (o *UserService) ListUsers(ctx context.Context) ([]model.UserEntity, error) {
 	users, err := o.db.GetUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("user retrieval failure in db")

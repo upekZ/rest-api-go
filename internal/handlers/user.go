@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/upekZ/rest-api-go/internal/database/queries" //To be removed after moving usage of queries.User --> model.UserEntity
 	"github.com/upekZ/rest-api-go/internal/model"
 	"net/http"
 )
 
 type Service interface {
 	CreateUser(ctx context.Context, user *model.UserEntity) error
-	ListUsers(ctx context.Context) ([]queries.User, error) //queries.User to be replaced with model.UserEntity
+	ListUsers(ctx context.Context) ([]model.UserEntity, error)
 	GetUserByID(ctx context.Context, id string) (*model.UserEntity, error)
 	DeleteUser(ctx context.Context, id string) (*model.UserEntity, error)
 	UpdateUser(ctx context.Context, id string, user *model.UserEntity) (*model.UserEntity, error)
